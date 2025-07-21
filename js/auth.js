@@ -13,7 +13,7 @@ firebase.auth().onAuthStateChanged(function(user) {
 
 //função que permite o user sair de sua conta
 function signOut() {
-    firebase.auth().signOut().then(function(error) {
+    firebase.auth().signOut().then(function() {
         window.location.href = 'login.html';
     }).catch(function(error) {
         showError("Erro ao sair: ", error);
@@ -24,7 +24,9 @@ function signOut() {
 function signInWithGoogle() {
     showItem(loading);
     //é possivel fazer com o firebase.auth().signInWithRedirect abrindo uma nova aba
-    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(error) {
+    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(function(result){
+        window.location.href = 'homePage.html'; // Redireciona para a página inicial após o login
+    }).catch(function(error) {
         showError("Erro ao logar com o Google: ", error);
         hideItem(loading);
     }).finally(function() {
@@ -46,4 +48,21 @@ function deleteAccount() {
             hideItem(loading);
         });
     }
+}
+
+//verifica se o usuário está autenticado com a conta institucional (para evitar redirecionamento desnecessário para homePage)
+//RESTRINGE PARA CONTA INSTITUCIONAL (@TEIACOLTEC.ORG)
+function checkAuth() {
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            const userEmail = user.email;
+
+            if (!userEmail.endsWith("@teiacoltec.org")) {
+            alert("Acesso negado. Conta não autorizada. Por favor, use um email institucional (@teiacoltec.org) para se autenticar.");
+            firebase.auth().signOut();
+        }
+    } else {
+        window.location.href = "login.html";
+    }
+    });
 }
