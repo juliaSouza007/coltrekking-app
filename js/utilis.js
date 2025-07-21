@@ -1,26 +1,28 @@
 //definindo referências para os elementos da pagina HTML
 var loading = document.getElementById('loading');
 var auth = document.getElementById('auth');
-var userContent = document.getElementById('userContent');
+var homePage = document.getElementById('homePage');
 var userEmail = document.getElementById('userEmail');
 var userImg = document.getElementById('userImg');
 var userName = document.getElementById('userName');
 
 //remove elementos da aba
 function hideItem(item) {
-    item.style.display = 'none';
+    if (item && item.style) {
+        item.style.display = 'none';
+    }
 }
 
 //oculta elementos da aba
 function showItem(item) {
-    item.style.display = 'block';
+    if (item && item.style) {
+        item.style.display = 'block';
+    }
 }
 
 //mostrar conteúdo pra usuários não autenticados
 function showAuth() {
-    authForm.email.value = '';
-    authForm.password.value = '';
-    hideItem(userContent);
+    hideItem(homePage);
     showItem(auth);
 }
 
@@ -34,7 +36,7 @@ function showUserContent(user) {
     userEmail.innerHTML = user.email;
     hideItem(auth);
 
-    showItem(userContent);
+    showItem(homePage);
 }
 
 //centralizar e traduzir erros

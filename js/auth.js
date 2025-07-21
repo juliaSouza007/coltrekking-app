@@ -13,8 +13,10 @@ firebase.auth().onAuthStateChanged(function(user) {
 
 //função que permite o user sair de sua conta
 function signOut() {
-    firebase.auth().signOut().catch(function(error) {
-        console.error("Erro ao sair:", error);
+    firebase.auth().signOut().then(function(error) {
+        window.location.href = 'login.html';
+    }).catch(function(error) {
+        showError("Erro ao sair: ", error);
     });
 }
 
@@ -30,25 +32,6 @@ function signInWithGoogle() {
     });
 }
 
-//função que atualiza o nome de usuário
-function updateUsername() {
-    var newName = prompt("Digite o novo nome de usuário:", userName.innerHTML);
-    if (newName) {
-        userName.innerHTML = newName;
-        showItem(loading);
-        firebase.auth().currentUser.updateProfile({
-            displayName: newName
-        }).catch(function(error) {
-            showError("Erro ao atualizar nome de usuário: ", error);
-        }).finally(function() {
-            hideItem(loading);
-        });
-    } else {
-        alert("Nome de usuário não fornecido. A atualização foi cancelada.");
-        hideItem(loading);
-    }
-} 
-
 //função que exclui a conta do Usuário
 function deleteAccount() {
     var confirmation = confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.");
@@ -56,6 +39,7 @@ function deleteAccount() {
         showItem(loading);
         firebase.auth().currentUser.delete().then(function() {
             alert("Conta excluída com sucesso!");
+            window.location.href = 'login.html';
         }).catch(function(error) {
             showError("Erro ao excluir conta: ", error);
         }).finally(function() {
