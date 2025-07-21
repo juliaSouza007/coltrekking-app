@@ -14,7 +14,7 @@
     <div id="homePage" class="center">
         <img src="images/coltrekkingHorizontal.png" id="imgHP" alt="Logo Coltrekking">
         <hr>
-        <h3 class="center">Bem-vindo(a) a HomePage!</h3>
+        <h3 class="center">Bem-vindo(a) a HomePage admin!</h3>
         <div id="userInfo" class="center">
             <img id="userImg">
             <p id="userName"></p>
@@ -33,7 +33,37 @@
 
         <div id="eventos" class="tab-content active">
             <h2>Eventos</h2>
-            <p>Bem-vindo aos eventos! Aqui ficará a programação principal.</p>
+            <button class="alternative" onclick="createEvent()">Criar Evento</button>
+            <form id="eventoForm">
+                <label>Nome do Evento:</label>
+                <input type="text" id="nome" required><br>
+
+                <label>Distância (km):</label>
+                <input type="number" id="distancia" required><br>
+
+                <label>Tipo de Trajeto:</label>
+                <select id="trajeto" required>
+                    <option value="">Selecione</option>
+                    <option value="ida-volta">Ida e Volta</option>
+                    <option value="circular">Circular</option>
+                </select><br>
+
+                <label>Nível de Dificuldade:</label>
+                <select id="dificuldade" required>
+                    <option value="">Selecione</option>
+                    <option value="iniciante">Iniciante</option>
+                    <option value="intermediario">Intermediário</option>
+                    <option value="avancado">Avançado</option>
+                </select><br>
+
+                <label>Data:</label>
+                <input type="date" id="data" required><br>
+
+                <label>Descrição:</label><br>
+                <textarea id="descricao" rows="4" cols="40"></textarea><br>
+
+                <button type="submit">Salvar Evento</button>
+            </form>
         </div>
 
         <div id="photos" class="tab-content">
@@ -62,6 +92,7 @@
     <script src="js/utilis.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/tabs.js"></script>
+    <script src="js/criarEvento.js"></script>
 
     <!--
     <script>

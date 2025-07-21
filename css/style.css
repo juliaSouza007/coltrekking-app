@@ -1,13 +1,12 @@
-body{
+body {
     color: #444;
-    font-family: Tahoma;
     display: flex;
     height: 96vh;
     background-color: #e5d7bd;
 }
 
 #app {
-    width: 50%;
+    width: 70%;
     margin: auto;
     box-shadow: 4px 4px 20px #888;
     padding: 20px;
@@ -25,7 +24,7 @@ body{
 }
 
 #imgLogin {
-    width: 80%;
+    width: 70%;
     height: auto;
     border-radius: 20px;
 }
@@ -45,15 +44,17 @@ body{
 }
 
 h2 {
-    font-family: 'Anton', sans-serif;
+    font-family: 'Bebas Neue', sans-serif;
     color: #15140e;
     margin: 0;
-    font-size: 3vw;
+    font-size: 2vw;
 }
 
 h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    color: #15140e;
     margin: 4px;
-    font-weight: normal;
+    font-size: 3vw;
 }
 
 hr {
@@ -76,14 +77,16 @@ input {
 }
 
 button {
-    background-color: green;
-    font-size: 15px;
+    width: 16vw;
+    background-color: #f29c2c;
+    font-size: 1.4vw;
     color: white;
-    padding: 5px;
-    margin: 4px;
+    padding: 0.7vw 1vw;
+    margin: 1vw;
     border-radius: 8px;
     border: none;
     outline: none;
+    box-sizing: border-box;
 }
 
 button:hover {
@@ -94,6 +97,7 @@ button:hover {
 p {
     font-family: 'Anton', sans-serif;
     color: #151515;
+    font-size: 1vw;
     margin: 0;
 }
 
@@ -118,7 +122,7 @@ p {
 
 }
 
-#auth img:hover{
+#auth img:hover {
     opacity: 0.75;
     cursor: pointer;
 }
@@ -126,4 +130,48 @@ p {
 #userImg {
     width: 10%;
     border-radius: 100%;
+}
+
+/* Home Page */
+#imgHP {
+    width: 50%;
+    height: auto;
+    border-radius: 20px;
+}
+
+/* Tab Bar Styles */
+.tab-bar {
+    height: 20%;
+    background-color: #15140e;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tab-bar button {
+    background-color: inherit;
+    color: #f29c2c;
+    border: none;
+    outline: none;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 1.4vw;
+}
+
+.tab-bar button:hover {
+    background-color: #edcb94;
+}
+
+.tab-bar button.active {
+    color: #15140e;
+    background-color: #edcb94;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
 }

@@ -1,6 +1,12 @@
 //traduz o conteúdo do site para português
 firebase.auth().languageCode = 'pt-BR';
 
+//administradores do sistema
+var adminEmails = [
+    "a2023952624@teiacoltec.org",
+    "hh@teiacoltec.org"
+];
+
 //função que centraliza e trata a autenticação
 firebase.auth().onAuthStateChanged(function(user) {
     hideItem(loading);
@@ -25,7 +31,11 @@ function signInWithGoogle() {
     showItem(loading);
     //é possivel fazer com o firebase.auth().signInWithRedirect abrindo uma nova aba
     firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(function(result){
-        window.location.href = 'homePage.html'; // Redireciona para a página inicial após o login
+        if (adminEmails.includes(result.user.email)) {
+            window.location.href = 'homeAdmin.html'; // Redireciona para a página de administração
+        } else {
+            window.location.href = 'homePage.html'; // Redireciona para a página inicial após o login
+        }
     }).catch(function(error) {
         showError("Erro ao logar com o Google: ", error);
         hideItem(loading);
@@ -58,11 +68,11 @@ function checkAuth() {
             const userEmail = user.email;
 
             if (!userEmail.endsWith("@teiacoltec.org")) {
-            alert("Acesso negado. Conta não autorizada. Por favor, use um email institucional (@teiacoltec.org) para se autenticar.");
-            firebase.auth().signOut();
+                alert("Acesso negado. Conta não autorizada. Por favor, use um email institucional (@teiacoltec.org) para se autenticar.");
+                firebase.auth().signOut();
+            }
+        } else {
+            window.location.href = "login.html";
         }
-    } else {
-        window.location.href = "login.html";
-    }
     });
 }
