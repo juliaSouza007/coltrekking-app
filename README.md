@@ -1,7 +1,7 @@
 # <img src="images/logo.png" alt="Logo do Projeto" width="28px"/> COLTREKKING WEB APP
 
 <img src="images/coltrekkingHorizontal.png" alt="Logo do Projeto" width="40%"/>
-<img src="images/groupHH.png" alt="Grupo 17/05" width="40%"/>
+<img src="images/groupHH.jpg" alt="Grupo 17/05" width="40%"/>
 
 ---
 
