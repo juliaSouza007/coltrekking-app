@@ -80,6 +80,7 @@ button {
     width: 16vw;
     background-color: #f29c2c;
     font-size: 1.4vw;
+    font-family: 'Anton', sans-serif;
     color: white;
     padding: 0.7vw 1vw;
     margin: 1vw;
@@ -156,6 +157,7 @@ p {
     cursor: pointer;
     transition: background-color 0.3s;
     font-size: 1.4vw;
+    font-family: 'Bebas Neue', sans-serif;
 }
 
 .tab-bar button:hover {
@@ -174,4 +176,69 @@ p {
 
 .tab-content.active {
     display: block;
+}
+
+/*forms de eventos*/
+label {
+    font-family: 'Bebas Neue', sans-serif;
+    color: #15140e;
+    font-size: 2vw;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="file"] {
+    width: 80%;
+    margin: 4px;
+    padding: 8px;
+    font-size: 1.5vw;
+    font-family: 'Anton', sans-serif;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 10px #151515;
+    outline-color: #000000;
+    background-color: #e5d7bd;
+}
+
+select {
+    width: 25%;
+    margin: 4px;
+    padding: 8px;
+    font-size: 1.5vw;
+    font-family: 'Anton', sans-serif;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 10px #151515;
+    outline-color: #000000;
+    background-color: #e5d7bd;
+}
+
+textarea {
+    width: 80%;
+    margin: 4px;
+    padding: 8px;
+    font-size: 1.5vw;
+    font-family: 'Anton', sans-serif;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 10px #151515;
+    outline-color: #000000;
+    background-color: #e5d7bd;
+}
+
+#eventContainer .event-card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    background-color: #e5d7bd;
+    box-shadow: 2px 2px 10px #151515;
+    transition: box-shadow 0.2s;
+    margin-top: 10px;
+}
+#eventContainer .event-card:hover {
+    box-shadow: 4px 4px 20px #888;
+    background-color: #edcb94;
 }

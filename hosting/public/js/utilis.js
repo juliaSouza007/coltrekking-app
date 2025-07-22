@@ -6,6 +6,11 @@ var userEmail = document.getElementById('userEmail');
 var userImg = document.getElementById('userImg');
 var userName = document.getElementById('userName');
 
+//definindo referências para os eventos
+var eventForm = document.getElementById('eventForm');
+var eventContainer = document.getElementById('eventContainer');
+var eventCount = document.getElementById('eventCount');
+
 //remove elementos da aba
 function hideItem(item) {
     if (item && item.style) {
@@ -61,5 +66,9 @@ var actionCodeSettings = {
     url: 'coltrekking-app-c3026.firebaseapp.com'
 }
 
-//var database = firebase.database();
-//var dbRefUsers = database.ref('users');
+var database = firebase.database();
+var dbRefEvents = database.ref('event');
+
+dbRefEvents.on('value', function (dataSnapshot) {
+    fillEventList(dataSnapshot);
+});

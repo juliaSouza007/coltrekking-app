@@ -1,8 +1,8 @@
-# <img src="images/logo.png" alt="Logo do Projeto" width="28px"/> COLTREKKING WEB APP
+# <img src="hosting/public/images/logo.png" alt="Logo do Projeto" width="28px"/> COLTREKKING WEB APP
 
 <div style="display: flex; gap: 20px; align-items: center;">
-  <img src="images/coltrekkingHorizontal.png" alt="Logo do Projeto" width="45%"/>
-  <img src="images/groupHH.jpg" alt="Grupo 17/05" width="40%"/>
+  <img src="hosting/public/images/coltrekkingHorizontal.png" alt="Logo do Projeto" width="45%"/>
+  <img src="hosting/public/images/groupHH.jpg" alt="Grupo 17/05" width="40%"/>
 </div>
 
 ---
@@ -40,4 +40,4 @@ Oi! Meu nome é **Júlia Souza**. Atualmente curso o ensino técnico integrado e
 
 Conheci o projeto Coltrekking assim que entrei no colégio e me interessei. Participei de algumas trilhas entre 2023 e 2024 e, neste ano, passei a ir a todas que consigo! Me apaixonei pelas trilhas e, em 2025, fui aprovada no processo seletivo do **Programa de Monitoria do COLTEC** para desenvolver este site como estágio de conclusão de curso e complementador do Projeto de Ensino.
 
-<img src="images/dev.png" alt="Julinha no Trekking" width="40%"/>
+<img src="hosting/public/images/dev.png" alt="Julinha no Trekking" width="40%"/>

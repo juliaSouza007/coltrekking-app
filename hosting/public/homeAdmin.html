@@ -33,36 +33,57 @@
 
         <div id="eventos" class="tab-content active">
             <h2>Eventos</h2>
-            <button class="alternative" onclick="createEvent()">Criar Evento</button>
-            <form id="eventoForm">
-                <label>Nome do Evento:</label>
+            <div id="listEvents">
+                <p id="eventCount">Carregando eventos...</p>
+                <div id="eventContainer"></ul>
+            </div>
+
+            <button class="alternative" id="createEvent">Criar Evento</button>
+            
+            <form id="eventForm" class="startHidden">
+                <label>Nome do Evento:</label><br>
                 <input type="text" id="nome" required><br>
 
-                <label>Distância (km):</label>
+                <br><label>Distância (km):</label><br>
                 <input type="number" id="distancia" required><br>
 
-                <label>Tipo de Trajeto:</label>
+                <br><label>Tipo de Trajeto:</label>
                 <select id="trajeto" required>
                     <option value="">Selecione</option>
-                    <option value="ida-volta">Ida e Volta</option>
-                    <option value="circular">Circular</option>
-                </select><br>
+                    <option value="ping-pong">Ping-pong</option>
+                    <option value="circuito">Circuito</option>
+                    <option value="travessia">Travessia</option>
+                </select>
 
                 <label>Nível de Dificuldade:</label>
                 <select id="dificuldade" required>
                     <option value="">Selecione</option>
-                    <option value="iniciante">Iniciante</option>
-                    <option value="intermediario">Intermediário</option>
-                    <option value="avancado">Avançado</option>
+                    <option value="Fácil pacas ++">Fácil pacas ++</option>
+                    <option value="Fácil pacas +">Fácil pacas +</option>
+                    <option value="Fácil pacas">Fácil pacas</option>
+                    <option value="Fácil">Fácil</option>
+                    <option value="Médio (acampas)">Médio (acampas)</option>
                 </select><br>
 
-                <label>Data:</label>
+                <br><label>Data do evento:</label><br>
                 <input type="date" id="data" required><br>
 
-                <label>Descrição:</label><br>
+                <br><label>Início das inscrições:</label><br>
+                <input type="datetime-local" id="dataInscricao" required><br>
+
+                <br><label>Preleção:</label><br>
+                <input type="datetime-local" id="dataPrelecao" required><br>
+
+                <br><label>Local da Preleção:</label><br>
+                <input type="text" id="localEncontro" required><br>
+
+                <br><label>Descrição:</label><br>
                 <textarea id="descricao" rows="4" cols="40"></textarea><br>
 
-                <button type="submit">Salvar Evento</button>
+                <br><label>Percuso e Altimetria:</label><br>
+                <input type="file" id="percursoAltimetria" accept=".png, .jpg"><br>
+
+                <br><button type="submit" id="submitEventForm">Salvar Evento</button>
             </form>
         </div>
 
@@ -92,7 +113,7 @@
     <script src="js/utilis.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/tabs.js"></script>
-    <script src="js/criarEvento.js"></script>
+    <script src="js/eventos.js"></script>
 
     <!--
     <script>
