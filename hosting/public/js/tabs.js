@@ -1,4 +1,4 @@
-function openTab(tabId) {
+function openTab(tabId, event) {
   const contents = document.querySelectorAll('.tab-content');
   const buttons = document.querySelectorAll('.tab-button');
 
