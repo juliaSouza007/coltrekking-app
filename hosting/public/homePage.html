@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Coltrekking - Home</title>
+    <link rel="shortcut icon" href="images/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bebas+Neue&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Anton&display=swap">
+</head>
+
+<body>
+    <div id="homePage" class="center">
+        <img src="images/coltrekkingHorizontal.png" id="imgHP" alt="Logo Coltrekking">
+        <hr>
+        <h3 class="center">Bem-vindo(a) a HomePage!</h3>
+        <div id="userInfo" class="center">
+            <img id="userImg">
+            <p id="userName"></p>
+            <p id="userEmail"></p>
+            <button class="alternative" onclick="signOut()">Sair</button>
+            <button class="danger" onclick="deleteAccount()">Excluir conta</button>
+        </div>
+
+        <hr>
+        <div class="tab-bar">
+            <button class="tab-button active" onclick="openTab('eventos')">Eventos</button>
+            <button class="tab-button" onclick="openTab('photos')">Photos</button>
+            <button class="tab-button" onclick="openTab('lista-negra')">Lista Negra</button>
+            <button class="tab-button" onclick="openTab('instrucoes')">Instruções Gerais</button>
+        </div>
+
+        <div id="eventos" class="tab-content active">
+            <h2>Eventos</h2>
+            <p>Bem-vindo aos eventos! Aqui ficará a programação principal.</p>
+        </div>
+
+        <div id="photos" class="tab-content">
+            <h2>Photos</h2>
+            <p>Galeria de fotos dos eventos.</p>
+        </div>
+
+        <div id="lista-negra" class="tab-content">
+            <h2>Lista Negra</h2>
+            <p>Pessoas bloqueadas de irem nos próximos eventos.</p>
+        </div>
+
+        <div id="instrucoes" class="tab-content">
+            <h2>Instruções Gerais</h2>
+            <p>Orientações importantes para todos os participantes.</p>
+        </div>
+    </div>
+
+    <!-- Recursos do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-database.js"></script>
+
+    <!-- Scripts -->
+    <script src="js/firebase.js"></script>
+    <script src="js/utilis.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/tabs.js"></script>
+
+    <!--
+    <script>
+        checkAuth(); //verifica se o usuario está logado com a conta institucional
+    </script>   
+    -->
+</body>
+
+</html>
