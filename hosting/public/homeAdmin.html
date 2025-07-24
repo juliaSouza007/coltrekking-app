@@ -32,7 +32,7 @@
         </div>
 
         <div id="eventos" class="tab-content active">
-            <h2>Eventos</h2>
+            <h3>Eventos</h3>
             <div id="listEvents">
                 <p id="eventCount">Carregando eventos...</p>
                 <div id="eventContainer"></div>
@@ -50,9 +50,9 @@
                 <br><label>Tipo de Trajeto:</label>
                 <select id="trajeto" required>
                     <option value="">Selecione</option>
-                    <option value="ping-pong">Ping-pong</option>
-                    <option value="circuito">Circuito</option>
-                    <option value="travessia">Travessia</option>
+                    <option value="Ping-pong">Ping-pong</option>
+                    <option value="Circuito">Circuito</option>
+                    <option value="Travessia">Travessia</option>
                 </select>
 
                 <label>Nível de Dificuldade:</label>
@@ -80,10 +80,13 @@
                 <br><label>Descrição:</label><br>
                 <textarea id="descricao" rows="4" cols="40"></textarea><br>
 
+                <!-- Inserir altimetria depois (precisa do cloud storage)
                 <br><label>Percuso e Altimetria:</label><br>
                 <input type="file" id="percursoAltimetria" accept=".png, .jpg"><br>
+                -->
 
                 <br><button type="submit" id="submitEventForm">Salvar Evento</button>
+                <br><button type="button" class="alternative" id="editEventForm">Salvar Edição</button>
             </form>
         </div>
 

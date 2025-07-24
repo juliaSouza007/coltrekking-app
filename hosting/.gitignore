@@ -7,3 +7,6 @@ public/js/firebase.js
 # IDEs/editores
 .vscode/
 .idea/
+
+#log files
+*.log

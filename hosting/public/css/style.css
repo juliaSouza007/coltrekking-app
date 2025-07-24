@@ -238,7 +238,19 @@ textarea {
     transition: box-shadow 0.2s;
     margin-top: 10px;
 }
+
 #eventContainer .event-card:hover {
     box-shadow: 4px 4px 20px #888;
     background-color: #edcb94;
+}
+
+/* botões de eventos */
+#submitEventForm {
+    margin: 1vw auto;
+    display: flex;
+}
+
+#editEventForm {
+    margin: 1vw auto;
+    display: flex;
 }

@@ -8,6 +8,8 @@ var userName = document.getElementById('userName');
 
 //definindo referências para os eventos
 var eventForm = document.getElementById('eventForm');
+var submitEventForm = document.getElementById('submitEventForm');
+var editEventForm = document.getElementById('editEventForm');
 var eventContainer = document.getElementById('eventContainer');
 var eventCount = document.getElementById('eventCount');
 
@@ -70,5 +72,5 @@ var database = firebase.database();
 var dbRefEvents = database.ref('event');
 
 dbRefEvents.on('value', function (dataSnapshot) {
-    fillEventList(dataSnapshot);
+      fillEventList(dataSnapshot, firebase.auth().currentUser);
 });
