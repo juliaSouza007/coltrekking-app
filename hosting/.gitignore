@@ -1,0 +1,9 @@
+#FIREBASE DADOS ULTRA SENSÍVEIS!!!!!!!!
+public/js/firebase.js
+
+#cache
+.firebase/*.cache
+
+# IDEs/editores
+.vscode/
+.idea/
