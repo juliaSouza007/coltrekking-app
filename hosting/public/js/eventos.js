@@ -24,12 +24,17 @@ eventForm.onsubmit = function (event) {
     var distancia = document.getElementById('distancia').value;
     var trajeto = document.getElementById('trajeto').value;
     var dificuldade = document.getElementById('dificuldade').value;
-    var data = new Date(document.getElementById('data').value + 'T00:00:00').toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    var data = document.getElementById('data').value;
     var dataInscricao = document.getElementById('dataInscricao').value;
     var dataPrelecao = document.getElementById('dataPrelecao').value;
     var localEncontro = document.getElementById('localEncontro').value;
     var descricao = document.getElementById('descricao').value;
     //var percursoAltimetria = document.getElementById('percursoAltimetria').files[0] ? document.getElementById('percursoAltimetria').files[0].name : '';
+
+    //formatar datas 
+    var formattedData = formattedDate(data);
+    var formattedDataInscricao = formattedDate(dataInscricao);
+    var formattedDataPrelecao = formattedDate(dataPrelecao);
 
     if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localEncontro && descricao) {
         var newEventRef = dbRefEvents.push();
@@ -38,9 +43,9 @@ eventForm.onsubmit = function (event) {
             distancia: distancia,
             trajeto: trajeto,
             dificuldade: dificuldade,
-            data: data,
-            dataInscricao: dataInscricao,
-            dataPrelecao: dataPrelecao,
+            data: formattedData,
+            dataInscricao: formattedDataInscricao,
+            dataPrelecao: formattedDataPrelecao,
             localEncontro: localEncontro,
             descricao: descricao,
             //percursoAltimetria: percursoAltimetria
@@ -97,7 +102,7 @@ function fillEventList(dataSnapshot, user) {
             </p>
         */
 
-        // criar botão Remover
+        // BOTÕES DE ADMINISTRADORES
         if (user.email && adminEmails.includes(user.email)) {
             // criar botão Remover
             var removeBtn = document.createElement('button');
@@ -115,45 +120,45 @@ function fillEventList(dataSnapshot, user) {
                 updateEvent(item.key);
             };
 
+            // criar botão Ver Inscrições
+            var listarInscricoesBtn = document.createElement('button');
+            listarInscricoesBtn.textContent = 'Ver Inscrições';
+            listarInscricoesBtn.className = 'eventBtn';
+            listarInscricoesBtn.onclick = function () {
+                listarInscricoes(item.key, value.nome);
+            };
+
             // Adicionar os botões ao card
             eventCard.appendChild(removeBtn);
             eventCard.appendChild(editBtn);
+            eventCard.appendChild(listarInscricoesBtn);
+
+            // BOTÕES DE USUÁRIOS 
         } else {
             // criar botão Inscrever-se
             var subscribeBtn = document.createElement('button');
             subscribeBtn.textContent = 'Inscrever-se';
             subscribeBtn.className = 'primary eventBtn';
-            subscribeBtn.onclick = function () {
-                const user = firebase.auth().currentUser;
 
-                if (!user) {
-                    alert('Você precisa estar logado para se inscrever.');
-                    return;
-                }
+            subscribeBtn.disabled = false;
 
-                const userId = user.uid;
-                const email = user.email;
-                const dataInscricao = new Date().toISOString(); // Horário atual da inscrição
-
-                // Caminho: /inscricoes/eventoId/userId/
-                const inscricaoRef = firebase.database().ref('inscricoes/' + item.key + '/' + userId);
-
-                inscricaoRef.set({
-                    email: email,
-                    dataInscricao: dataInscricao
-                }).then(() => {
-                    alert('Inscrição realizada com sucesso!');
-                    // Você pode desabilitar o botão ou mudar o texto
+            // Verifica se o usuário já está inscrito
+            const inscricaoRef = firebase.database().ref('inscricoes/' + item.key + '/' + user.uid);
+            inscricaoRef.once('value').then(snapshot => {
+                if (snapshot.exists()) {
                     subscribeBtn.disabled = true;
                     subscribeBtn.textContent = 'Inscrito';
-                }).catch((error) => {
-                    console.error('Erro ao inscrever:', error);
-                    alert('Erro ao realizar inscrição. Tente novamente.');
-                });
+                    subscribeBtn.classList.remove('primary');
+                    subscribeBtn.classList.add('disabled');
+                }
+            });
+
+            // ação de clique
+            subscribeBtn.onclick = function () {
+                subscribeToEvent(item.key, subscribeBtn);
             };
 
-
-            // Adicionar o botão ao card
+            // adicionar ao card
             eventCard.appendChild(subscribeBtn);
         }
 
@@ -220,6 +225,44 @@ function updateEvent(key) {
     showItem(editEventForm);
 }
 
+//botão para listar inscrições de um evento
+function listarInscricoes(eventId, nomeEvento = 'Evento') {
+    const inscricoesRef = firebase.database().ref('inscricoes/' + eventId);
+
+    inscricoesRef.once('value').then(snapshot => {
+        if (!snapshot.exists()) {
+            alert('Nenhuma inscrição encontrada para "' + nomeEvento + '".');
+            return;
+        }
+
+        // Extrai inscrições e transforma em array ordenado por dataInscricao
+        const inscricoes = [];
+        snapshot.forEach(child => {
+            const data = child.val();
+            inscricoes.push({
+                email: data.email || '---',
+                dataInscricao: data.dataInscricao || '---'
+            });
+        });
+
+        inscricoes.sort((a, b) => {
+            return parseDateBr(a.dataInscricao) - parseDateBr(b.dataInscricao);
+        });
+
+        // Montar visualização
+        let lista = `Inscrições para "${nomeEvento}":\n\n`;
+        inscricoes.forEach((insc, i) => {
+            lista += `${i + 1}. ${insc.email} - ${insc.dataInscricao}\n`;
+        });
+
+        alert(lista);
+    }).catch(error => {
+        console.error('Erro ao buscar inscrições:', error);
+        alert('Erro ao buscar inscrições.');
+    });
+}
+
+
 //trata a submissão do formulário de edição de eventos
 document.getElementById('editEventForm').onclick = function () {
     var key = eventForm.dataset.editingKey;
@@ -266,3 +309,33 @@ document.getElementById('editEventForm').onclick = function () {
         alert('Por favor, preencha todos os campos para atualizar o evento.');
     }
 };
+
+//trata a inscrição em eventos
+function subscribeToEvent(eventId, subscribeBtn) {
+    const user = firebase.auth().currentUser;
+
+    if (!user) {
+        alert('Você precisa estar logado para se inscrever.');
+        return;
+    }
+
+    const userId = user.uid;
+    const email = user.email;
+    const dataInscricao = horarioBrasilia(); // função já existente
+
+    const inscricaoRef = firebase.database().ref('inscricoes/' + eventId + '/' + userId);
+
+    inscricaoRef.set({
+        email: email,
+        dataInscricao: dataInscricao
+    }).then(() => {
+        alert('Inscrição realizada com sucesso!');
+        subscribeBtn.disabled = true;
+        subscribeBtn.textContent = 'Inscrito';
+        subscribeBtn.classList.remove('primary');
+        subscribeBtn.classList.add('disabled'); // opcional
+    }).catch((error) => {
+        console.error('Erro ao inscrever:', error);
+        alert('Erro ao realizar inscrição. Tente novamente.');
+    });
+}
