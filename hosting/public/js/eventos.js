@@ -31,11 +31,6 @@ eventForm.onsubmit = function (event) {
     var descricao = document.getElementById('descricao').value;
     //var percursoAltimetria = document.getElementById('percursoAltimetria').files[0] ? document.getElementById('percursoAltimetria').files[0].name : '';
 
-    //formatar datas 
-    var formattedData = formattedDate(data);
-    var formattedDataInscricao = formattedDate(dataInscricao);
-    var formattedDataPrelecao = formattedDate(dataPrelecao);
-
     if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localEncontro && descricao) {
         var newEventRef = dbRefEvents.push();
         newEventRef.set({
@@ -43,9 +38,9 @@ eventForm.onsubmit = function (event) {
             distancia: distancia,
             trajeto: trajeto,
             dificuldade: dificuldade,
-            data: formattedData,
-            dataInscricao: formattedDataInscricao,
-            dataPrelecao: formattedDataPrelecao,
+            data: data,
+            dataInscricao: dataInscricao,
+            dataPrelecao: dataPrelecao,
             localEncontro: localEncontro,
             descricao: descricao,
             //percursoAltimetria: percursoAltimetria
@@ -85,9 +80,9 @@ function fillEventList(dataSnapshot, user) {
         eventCard.innerHTML = `
             <h3>${value.nome}</h3>
             <p>Descrição: ${value.descricao || '---'}</p>
-            <p>Data: ${value.data || '---'}</p>
-            <p>Data de Inscrição: ${value.dataInscricao || '---'}</p>
-            <p>Data da Preleção: ${value.dataPrelecao || '---'}</p>
+            <p>Data: ${value.data ? formattedDate(value.data): '---'}</p>
+            <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
+            <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
             <p>Local da preleção: ${value.localEncontro || '---'}</p>
             <p>Dificuldade: ${value.dificuldade || '---'}</p>
             <p>Distância: ${value.distancia || '---'} km</p>
@@ -103,7 +98,7 @@ function fillEventList(dataSnapshot, user) {
         */
 
         // BOTÕES DE ADMINISTRADORES
-        if (user.email && adminEmails.includes(user.email)) {
+        if (adminEmails.includes(user.email)) {
             // criar botão Remover
             var removeBtn = document.createElement('button');
             removeBtn.textContent = 'Remover';
@@ -122,7 +117,7 @@ function fillEventList(dataSnapshot, user) {
 
             // criar botão Ver Inscrições
             var listarInscricoesBtn = document.createElement('button');
-            listarInscricoesBtn.textContent = 'Ver Inscrições';
+            listarInscricoesBtn.textContent = 'Baixar Planilha de Inscrições';
             listarInscricoesBtn.className = 'eventBtn';
             listarInscricoesBtn.onclick = function () {
                 listarInscricoes(item.key, value.nome);
@@ -205,9 +200,9 @@ function updateEvent(key) {
 
     document.getElementById('nome').value = eventName;
     document.getElementById('descricao').value = getValue(paragraphs[0].textContent);
-    document.getElementById('data').value = brDateTimeToInputDate(getValue(paragraphs[1].textContent));
-    document.getElementById('dataInscricao').value = brDateTimeToInputDate(getValue(paragraphs[2].textContent));
-    document.getElementById('dataPrelecao').value = brDateTimeToInputDate(getValue(paragraphs[3].textContent));
+    document.getElementById('data').value = getValue(paragraphs[1].textContent);
+    document.getElementById('dataInscricao').value = getValue(paragraphs[2].textContent);
+    document.getElementById('dataPrelecao').value = getValue(paragraphs[3].textContent);
     document.getElementById('localEncontro').value = getValue(paragraphs[4].textContent);
     document.getElementById('dificuldade').value = getValue(paragraphs[5].textContent);
 
