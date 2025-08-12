@@ -205,9 +205,9 @@ function updateEvent(key) {
 
     document.getElementById('nome').value = eventName;
     document.getElementById('descricao').value = getValue(paragraphs[0].textContent);
-    document.getElementById('data').value = getValue(paragraphs[1].textContent);
-    document.getElementById('dataInscricao').value = getValue(paragraphs[2].textContent);
-    document.getElementById('dataPrelecao').value = getValue(paragraphs[3].textContent);
+    document.getElementById('data').value = brDateTimeToInputDate(getValue(paragraphs[1].textContent));
+    document.getElementById('dataInscricao').value = brDateTimeToInputDate(getValue(paragraphs[2].textContent));
+    document.getElementById('dataPrelecao').value = brDateTimeToInputDate(getValue(paragraphs[3].textContent));
     document.getElementById('localEncontro').value = getValue(paragraphs[4].textContent);
     document.getElementById('dificuldade').value = getValue(paragraphs[5].textContent);
 
@@ -225,17 +225,16 @@ function updateEvent(key) {
     showItem(editEventForm);
 }
 
-//botão para listar inscrições de um evento
+// botão para listar inscrições de um evento e exportar CSV
 function listarInscricoes(eventId, nomeEvento = 'Evento') {
     const inscricoesRef = firebase.database().ref('inscricoes/' + eventId);
 
     inscricoesRef.once('value').then(snapshot => {
         if (!snapshot.exists()) {
-            alert('Nenhuma inscrição encontrada para "' + nomeEvento + '".');
+            alert(`Nenhuma inscrição encontrada para "${nomeEvento}".`);
             return;
         }
 
-        // Extrai inscrições e transforma em array ordenado por dataInscricao
         const inscricoes = [];
         snapshot.forEach(child => {
             const data = child.val();
@@ -245,23 +244,34 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
             });
         });
 
-        inscricoes.sort((a, b) => {
-            return parseDateBr(a.dataInscricao) - parseDateBr(b.dataInscricao);
+        // mais antigo primeiro
+        inscricoes.sort((a, b) => a.dataInscricao - b.dataInscricao);
+
+        // Montar CSV com separador ";"
+        let csvRows = [];
+        csvRows.push(["Email", "Data de Inscrição"]); 
+        inscricoes.forEach(insc => {
+            csvRows.push([
+                `"${(insc.email || '').replace(/"/g, '""')}"`,
+                `"${(insc.dataInscricao || '').replace(/"/g, '""')}"`
+            ]);
         });
 
-        // Montar visualização
-        let lista = `Inscrições para "${nomeEvento}":\n\n`;
-        inscricoes.forEach((insc, i) => {
-            lista += `${i + 1}. ${insc.email} - ${insc.dataInscricao}\n`;
-        });
+        const csvString = csvRows.map(e => e.join(";")).join("\n");
+        const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
 
-        alert(lista);
-    }).catch(error => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", `${nomeEvento.replace(/\s+/g, '_')}_inscricoes.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    })
+    .catch(error => {
         console.error('Erro ao buscar inscrições:', error);
         alert('Erro ao buscar inscrições.');
     });
 }
-
 
 //trata a submissão do formulário de edição de eventos
 document.getElementById('editEventForm').onclick = function () {

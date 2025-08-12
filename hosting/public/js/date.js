@@ -27,19 +27,32 @@ function formattedDate(date) {
     return formatted;
 }
 
-function parseDateBr(dateStr) {
-    // Exemplo: "29/06/2025, 20:20:00"
-    var parts = dateStr.split(', ');
-    var dateParts = parts[0].split('/');
-    var timeParts = parts[1].split(':');
+function brDateTimeToInputDate(brDateTimeStr) {
+    // Exemplo esperado: "24/07/2025, 09:36:00"
+    if (!brDateTimeStr) {
+        console.error('brDateTimeToInputDate: valor indefinido ou vazio');
+        return '';
+    }
 
-    var day = parseInt(dateParts[0], 10);
-    var month = parseInt(dateParts[1], 10) - 1; // mês começa do zero
-    var year = parseInt(dateParts[2], 10);
+    var parts = brDateTimeStr.split(',');  // separa na vírgula
+    if (parts.length < 1) {
+        console.error('Formato inválido:', brDateTimeStr);
+        return '';
+    }
 
-    var hour = parseInt(timeParts[0], 10);
-    var minute = parseInt(timeParts[1], 10);
-    var second = parseInt(timeParts[2], 10);
+    var datePart = parts[0].trim();  // remove espaços
+    var dateParts = datePart.split('/');
+    if (dateParts.length !== 3) {
+        console.error('Data mal formatada:', datePart);
+        return '';
+    }
 
-    return new Date(year, month, day, hour, minute, second).getTime();
+    var [day, month, year] = dateParts;
+
+    if (!day || !month || !year) {
+        console.error('Componentes de data ausentes:', { day, month, year });
+        return '';
+    }
+
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
