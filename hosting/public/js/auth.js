@@ -10,9 +10,26 @@ var adminEmails = [
 //função que centraliza e trata a autenticação
 firebase.auth().onAuthStateChanged(function(user) {
     hideItem(loading);
+
     if (user) {
+        // Monta objeto com os dados que você quer guardar
+        const userData = {
+            uid: user.uid,
+            nome: user.displayName || '',
+            email: user.email,
+        };
+
+        // Salva no database na rota /users/{uid}
+        firebase.database().ref('users/' + user.uid).set(userData).then(() => {
+            console.log('Usuário salvo/atualizado com sucesso!');
+        }).catch(error => {
+            console.error('Erro ao salvar usuário:', error);
+        });
+        
         showUserContent(user);
+        localStorage.setItem('uid', user.uid);
     } else {
+        localStorage.removeItem('uid'); 
         showAuth();
     }
 });
