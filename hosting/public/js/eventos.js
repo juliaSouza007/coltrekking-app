@@ -168,7 +168,6 @@ function fillEventList(dataSnapshot) {
         });
 }
 
-
 //botão para remover evento
 function removeEvent(key) {
     var selectedItem = document.getElementById(key);
@@ -178,12 +177,21 @@ function removeEvent(key) {
 
     var confirmation = confirm('Você tem certeza que deseja remover o evento: "' + eventName + '"?');
     if (confirmation) {
-        // Remover do Firebase
-        dbRefEvents.child(key).remove().then(() => {
-            selectedItem.remove();
-        })
+        // Referências
+        var eventRef = dbRefEvents.child(key); // eventos/{key}
+        var inscricoesRef = firebase.database().ref('inscricoes/' + key); // inscricoes/{key}
+
+        // Executa as duas remoções em paralelo
+        Promise.all([
+            eventRef.remove(),
+            inscricoesRef.remove()
+        ])
+            .then(() => {
+                selectedItem.remove();
+                console.log("Evento e inscrições removidos com sucesso.");
+            })
             .catch(function (error) {
-                showError("Falha ao remover o evento: ", error);
+                showError("Falha ao remover o evento/inscrições: ", error);
             });
     }
 }
@@ -326,7 +334,7 @@ function subscribeToEvent(eventId, subscribeBtn) {
 
     const userId = user.uid;
     const email = user.email;
-    const dataInscricao = horarioBrasilia(); // função já existente
+    const dataInscricao = formatDateToISOTruncated();   
 
     const inscricaoRef = firebase.database().ref('inscricoes/' + eventId + '/' + userId);
 
