@@ -7,9 +7,3 @@ function formattedDate(date) {
         hour12: false
     });
 }
-
-function formatDateToISOTruncated(date = new Date()) {
-  const offsetMs = date.getTimezoneOffset() * 60000; // diferença local ↔ UTC em ms
-  const localISOTime = new Date(date - offsetMs).toISOString().slice(0, 16);
-  return localISOTime;
-}

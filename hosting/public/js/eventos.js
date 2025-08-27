@@ -243,12 +243,22 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
             const data = child.val();
             inscricoes.push({
                 email: data.email || '---',
-                dataInscricao: data.dataInscricao || '---'
+                dataInscricao: data.dataInscricao || null // aqui deve ser timestamp salvo no banco
             });
         });
 
-        // mais antigo primeiro
-        inscricoes.sort((a, b) => a.dataInscricao - b.dataInscricao);
+        // mais antigo primeiro (ordenando pelo timestamp)
+        inscricoes.sort((a, b) => (a.dataInscricao || 0) - (b.dataInscricao || 0));
+
+        // Função para formatar timestamp no fuso de Brasília
+        function formatarData(ts) {
+            if (!ts) return '---';
+            const dateObj = new Date(ts);
+            return dateObj.toLocaleString('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
+                hour12: false
+            });
+        }
 
         // Montar CSV com separador ";"
         let csvRows = [];
@@ -256,7 +266,7 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
         inscricoes.forEach(insc => {
             csvRows.push([
                 `"${(insc.email || '').replace(/"/g, '""')}"`,
-                `"${(insc.dataInscricao || '').replace(/"/g, '""')}"`
+                `"${formattedDate(insc.dataInscricao)}"`
             ]);
         });
 
@@ -270,10 +280,10 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
         link.click();
         document.body.removeChild(link);
     })
-        .catch(error => {
-            console.error('Erro ao buscar inscrições:', error);
-            alert('Erro ao buscar inscrições.');
-        });
+    .catch(error => {
+        console.error('Erro ao buscar inscrições:', error);
+        alert('Erro ao buscar inscrições.');
+    });
 }
 
 //trata a submissão do formulário de edição de eventos
@@ -334,7 +344,7 @@ function subscribeToEvent(eventId, subscribeBtn) {
 
     const userId = user.uid;
     const email = user.email;
-    const dataInscricao = formatDateToISOTruncated();   
+    const dataInscricao = Date.now();;   
 
     const inscricaoRef = firebase.database().ref('inscricoes/' + eventId + '/' + userId);
 
