@@ -12,22 +12,32 @@ firebase.auth().onAuthStateChanged(function(user) {
     hideItem(loading);
 
     if (user) {
-        // Monta objeto com os dados que você quer guardar
-        const userData = {
-            uid: user.uid,
-            nome: user.displayName || '',
-            email: user.email,
-        };
+        const adminEmails = ['a2023952624@teiacoltec.org', 'hh@teiacoltec.org'];
+        const isAdmin = adminEmails.includes(user.email);
 
-        // Salva no database na rota /users/{uid}
-        firebase.database().ref('users/' + user.uid).set(userData).then(() => {
-            console.log('Usuário salvo/atualizado com sucesso!');
-        }).catch(error => {
-            console.error('Erro ao salvar usuário:', error);
-        });
-        
+        if (!isAdmin) {
+            // Salva apenas os dados essenciais iniciais (uid, nome, email)
+            const userData = {
+                uid: user.uid,
+                nome: user.displayName || '',
+                email: user.email
+            };
+
+            firebase.database().ref('users/' + user.uid).update(userData)
+            .then(() => {
+                console.log('Usuário salvo/atualizado com sucesso!');
+            })
+            .catch(error => {
+                console.error('Erro ao salvar usuário:', error);
+            });
+
+            // Guarda UID no localStorage
+            localStorage.setItem('uid', user.uid);
+        }
+
+        // Mostrar conteúdo do usuário
         showUserContent(user);
-        localStorage.setItem('uid', user.uid);
+
     } else {
         localStorage.removeItem('uid'); 
         showAuth();

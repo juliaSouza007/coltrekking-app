@@ -4,14 +4,14 @@ var adminEmails = [
     "hh@teiacoltec.org"
 ];
 
-
 //trata a exibicao do formulário de eventos
 document.getElementById('createEvent').onclick = function () {
     showItem(eventForm);
     hideItem(loading);
-    hideItem(editEventForm); // esconde o botão de editar
-    showItem(submitEventForm); // mostra o botão de criar
+    hideItem(editEventForm);
+    showItem(submitEventForm);
     eventForm.reset();
+
 }
 
 //trata a submissão do formulário de eventos
@@ -58,114 +58,6 @@ eventForm.onsubmit = function (event) {
         hideItem(loading);
         showItem(eventForm);
     }
-}
-
-// função para preencher a lista de eventos
-function fillEventList(dataSnapshot) {
-    const eventContainer = document.getElementById('eventContainer');
-    eventContainer.innerHTML = ''; // limpa o container para evitar duplicações
-    const events = dataSnapshot.numChildren();
-    eventCount.innerHTML = 'Total de eventos: ' + events;
-
-    // pega UID do usuário logado do localStorage
-    const uid = localStorage.getItem('uid');
-
-    if (!uid) {
-        console.warn('UID não encontrado no localStorage.');
-        hideItem(loading);
-        return;
-    }
-
-    // busca email do usuário no Firebase
-    firebase.database().ref('/users/' + uid).once('value')
-        .then(userSnapshot => {
-            const userData = userSnapshot.val();
-            const userEmail = userData ? userData.email : null;
-
-            dataSnapshot.forEach(item => {
-                const value = item.val();
-
-                // Evita criar cards duplicados
-                if (document.getElementById(item.key)) return;
-
-                const eventCard = document.createElement('div');
-                eventCard.className = 'event-card';
-                eventCard.id = item.key;
-
-                eventCard.innerHTML = `
-                    <h3>${value.nome}</h3>
-                    <p>Descrição: ${value.descricao || '---'}</p>
-                    <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
-                    <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
-                    <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
-                    <p>Local da preleção: ${value.localEncontro || '---'}</p>
-                    <p>Dificuldade: ${value.dificuldade || '---'}</p>
-                    <p>Distância: ${value.distancia || '---'} km</p>
-                    <p>Trajeto: ${value.trajeto || '---'}</p>
-                `;
-
-                /* inserir altimentria depois (precisa do cloud storage)
-                <p>Altimetria:<br>
-                    ${value.percursoAltimetria
-                    ? `<img src="${value.percursoAltimetria}" alt="altimetria" style="max-width: 100%;">`
-                    : '---'}
-                </p>
-                */
-
-                // BOTÕES DE ADMIN
-                if (userEmail && adminEmails.includes(userEmail)) {
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = 'Remover';
-                    removeBtn.className = 'danger eventBtn';
-                    removeBtn.onclick = () => removeEvent(item.key);
-
-                    const editBtn = document.createElement('button');
-                    editBtn.textContent = 'Editar';
-                    editBtn.className = 'alternative eventBtn';
-                    editBtn.onclick = () => updateEvent(item.key);
-
-                    const listarInscricoesBtn = document.createElement('button');
-                    listarInscricoesBtn.textContent = 'Baixar Planilha de Inscrições';
-                    listarInscricoesBtn.className = 'eventBtn';
-                    listarInscricoesBtn.onclick = () => listarInscricoes(item.key, value.nome);
-
-                    eventCard.appendChild(removeBtn);
-                    eventCard.appendChild(editBtn);
-                    eventCard.appendChild(listarInscricoesBtn);
-                }
-
-                // BOTÕES DE USUÁRIO
-                else {
-                    const subscribeBtn = document.createElement('button');
-                    subscribeBtn.textContent = 'Inscrever-se';
-                    subscribeBtn.className = 'primary eventBtn';
-                    subscribeBtn.disabled = false;
-
-                    // Verifica inscrição
-                    firebase.database().ref('inscricoes/' + item.key + '/' + uid)
-                        .once('value')
-                        .then(snapshot => {
-                            if (snapshot.exists()) {
-                                subscribeBtn.disabled = true;
-                                subscribeBtn.textContent = 'Inscrito';
-                                subscribeBtn.classList.remove('primary');
-                                subscribeBtn.classList.add('disabled');
-                            }
-                        });
-
-                    subscribeBtn.onclick = () => subscribeToEvent(item.key, subscribeBtn);
-                    eventCard.appendChild(subscribeBtn);
-                }
-
-                eventContainer.appendChild(eventCard);
-            });
-
-            hideItem(loading);
-        })
-        .catch(err => {
-            console.error('Erro ao buscar usuário:', err);
-            hideItem(loading);
-        });
 }
 
 //botão para remover evento
@@ -243,6 +135,9 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
             const data = child.val();
             inscricoes.push({
                 email: data.email || '---',
+                userClass: data.userClass || '---',
+                userCourse: data.userCourse || '---',
+                userId: data.userId || '---',
                 dataInscricao: data.dataInscricao || null // aqui deve ser timestamp salvo no banco
             });
         });
@@ -262,11 +157,15 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
 
         // Montar CSV com separador ";"
         let csvRows = [];
-        csvRows.push(["Email", "Data de Inscrição"]);
+        csvRows.push(["Email", "ID", "Turma", "Curso", "Data de Inscrição"]);
+
         inscricoes.forEach(insc => {
             csvRows.push([
                 `"${(insc.email || '').replace(/"/g, '""')}"`,
-                `"${formattedDate(insc.dataInscricao)}"`
+                `"${(insc.userId || '').replace(/"/g, '""')}"`,
+                `"${(insc.userClass || '').replace(/"/g, '""')}"`,
+                `"${(insc.userCourse || '').replace(/"/g, '""')}"`,
+                `"${formatarData(insc.dataInscricao)}"`
             ]);
         });
 
@@ -280,14 +179,15 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
         link.click();
         document.body.removeChild(link);
     })
-    .catch(error => {
-        console.error('Erro ao buscar inscrições:', error);
-        alert('Erro ao buscar inscrições.');
-    });
+        .catch(error => {
+            console.error('Erro ao buscar inscrições:', error);
+            alert('Erro ao buscar inscrições.');
+        });
 }
 
 //trata a submissão do formulário de edição de eventos
-document.getElementById('editEventForm').onclick = function () {
+editEventForm.onclick = function (event) {
+    event.preventDefault();
     var key = eventForm.dataset.editingKey;
     if (!key) {
         alert('Erro: nenhum evento em edição.');
@@ -333,32 +233,81 @@ document.getElementById('editEventForm').onclick = function () {
     }
 };
 
-//trata a inscrição em eventos
-function subscribeToEvent(eventId, subscribeBtn) {
-    const user = firebase.auth().currentUser;
+// função para preencher a lista de eventos para administradores
+function fillEventList(dataSnapshot) {
+    const eventContainer = document.getElementById('eventContainer');
+    eventContainer.innerHTML = '';
+    const events = dataSnapshot.numChildren();
+    eventCount.innerHTML = 'Total de eventos: ' + events;
 
-    if (!user) {
-        alert('Você precisa estar logado para se inscrever.');
+    const uid = localStorage.getItem('uid');
+    if (!uid) {
+        console.warn('UID não encontrado no localStorage.');
+        hideItem(loading);
         return;
     }
 
-    const userId = user.uid;
-    const email = user.email;
-    const dataInscricao = Date.now();;   
+    firebase.database().ref('/users/' + uid).once('value')
+        .then(userSnapshot => {
+            const userData = userSnapshot.val();
+            const userEmail = userData ? userData.email : null;
 
-    const inscricaoRef = firebase.database().ref('inscricoes/' + eventId + '/' + userId);
+            dataSnapshot.forEach(item => {
+                const value = item.val();
+                if (document.getElementById(item.key)) return;
 
-    inscricaoRef.set({
-        email: email,
-        dataInscricao: dataInscricao
-    }).then(() => {
-        alert('Inscrição realizada com sucesso!');
-        subscribeBtn.disabled = true;
-        subscribeBtn.textContent = 'Inscrito';
-        subscribeBtn.classList.remove('primary');
-        subscribeBtn.classList.add('disabled'); // opcional
-    }).catch((error) => {
-        console.error('Erro ao inscrever:', error);
-        alert('Erro ao realizar inscrição. Tente novamente.');
-    });
+                const eventCard = document.createElement('div');
+                eventCard.className = 'event-card';
+                eventCard.id = item.key;
+
+                eventCard.innerHTML = `
+                    <h3>${value.nome}</h3>
+                    <p>Descrição: ${value.descricao || '---'}</p>
+                    <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
+                    <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
+                    <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
+                    <p>Local da preleção: ${value.localEncontro || '---'}</p>
+                    <p>Dificuldade: ${value.dificuldade || '---'}</p>
+                    <p>Distância: ${value.distancia || '---'} km</p>
+                    <p>Trajeto: ${value.trajeto || '---'}</p>
+                `;
+
+                /* inserir altimentria depois (precisa do cloud storage)
+                <p>Altimetria:<br>
+                    ${value.percursoAltimetria
+                    ? `<img src="${value.percursoAltimetria}" alt="altimetria" style="max-width: 100%;">`
+                    : '---'}
+                </p>
+                */
+
+                if (userEmail && adminEmails.includes(userEmail)) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = 'Remover';
+                    removeBtn.className = 'danger eventBtn';
+                    removeBtn.onclick = () => removeEvent(item.key);
+
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Editar';
+                    editBtn.className = 'alternative eventBtn';
+                    editBtn.onclick = () => updateEvent(item.key);
+
+                    const listarInscricoesBtn = document.createElement('button');
+                    listarInscricoesBtn.textContent = 'Baixar Planilha de Inscrições';
+                    listarInscricoesBtn.className = 'eventBtn';
+                    listarInscricoesBtn.onclick = () => listarInscricoes(item.key, value.nome);
+
+                    eventCard.appendChild(removeBtn);
+                    eventCard.appendChild(editBtn);
+                    eventCard.appendChild(listarInscricoesBtn);
+                }
+
+                eventContainer.appendChild(eventCard);
+            });
+
+            hideItem(loading);
+        })
+        .catch(err => {
+            console.error('Erro ao buscar usuário:', err);
+            hideItem(loading);
+        });
 }
