@@ -39,7 +39,7 @@
             </div>
 
             <button class="alternative" id="createEvent">Criar Evento</button>
-            
+
             <form id="eventForm" class="startHidden">
                 <label>Nome do Evento:</label><br>
                 <input type="text" id="nome" required><br>
@@ -93,6 +93,21 @@
         <div id="photos" class="tab-content">
             <h2>Photos</h2>
             <p>Galeria de fotos dos eventos.</p>
+            <div id="photoContainer">
+                <p id="photoCount">Carregando fotos...</p>
+            </div>
+
+            <button class="alternative" id="createPhoto">Adicionar link</button>
+
+            <div id="photoAdminForm" class="startHidden">
+                <h3>Adicionar link de fotos</h3>
+                <label>Evento:</label>
+                <select id="selectEventForPhoto"></select><br>
+                <label>URL das Fotos:</label><br>
+                <input type="text" id="photoURL"><br>
+                <button id="addPhotoBtn">Adicionar Link de Fotos</button>
+                <button type="button" onclick="hideItem(photoAdminForm)">Cancelar</button>
+            </div>
         </div>
 
         <div id="lista-negra" class="tab-content">
@@ -118,6 +133,7 @@
     <script src="js/tabs.js"></script>
     <script src="js/eventAdmin.js"></script>
     <script src="js/date.js"></script>
+    <script src="js/photosAdmin.js"></script>
 
     <!--
     <script>

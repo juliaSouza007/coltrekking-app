@@ -134,6 +134,7 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
         snapshot.forEach(child => {
             const data = child.val();
             inscricoes.push({
+                name: data.name || '---',
                 email: data.email || '---',
                 userClass: data.userClass || '---',
                 userCourse: data.userCourse || '---',
@@ -157,10 +158,11 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
 
         // Montar CSV com separador ";"
         let csvRows = [];
-        csvRows.push(["Email", "ID", "Turma", "Curso", "Data de Inscrição"]);
+        csvRows.push(["Nome", "Email", "ID", "Turma", "Curso", "Data de Inscrição"]);
 
         inscricoes.forEach(insc => {
             csvRows.push([
+                `"${(insc.name || '').replace(/"/g, '""')}"`,
                 `"${(insc.email || '').replace(/"/g, '""')}"`,
                 `"${(insc.userId || '').replace(/"/g, '""')}"`,
                 `"${(insc.userClass || '').replace(/"/g, '""')}"`,
@@ -240,74 +242,61 @@ function fillEventList(dataSnapshot) {
     const events = dataSnapshot.numChildren();
     eventCount.innerHTML = 'Total de eventos: ' + events;
 
-    const uid = localStorage.getItem('uid');
-    if (!uid) {
-        console.warn('UID não encontrado no localStorage.');
-        hideItem(loading);
-        return;
-    }
+    // pega o email do usuário logado direto pelo Firebase Auth
+    const user = firebase.auth().currentUser;
+    const userEmail = user ? user.email : null;
 
-    firebase.database().ref('/users/' + uid).once('value')
-        .then(userSnapshot => {
-            const userData = userSnapshot.val();
-            const userEmail = userData ? userData.email : null;
+    dataSnapshot.forEach(item => {
+        const value = item.val();
+        if (document.getElementById(item.key)) return;
 
-            dataSnapshot.forEach(item => {
-                const value = item.val();
-                if (document.getElementById(item.key)) return;
+        const eventCard = document.createElement('div');
+        eventCard.className = 'event-card';
+        eventCard.id = item.key;
 
-                const eventCard = document.createElement('div');
-                eventCard.className = 'event-card';
-                eventCard.id = item.key;
+        eventCard.innerHTML = `
+            <h3>${value.nome}</h3>
+            <p>Descrição: ${value.descricao || '---'}</p>
+            <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
+            <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
+            <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
+            <p>Local da preleção: ${value.localEncontro || '---'}</p>
+            <p>Dificuldade: ${value.dificuldade || '---'}</p>
+            <p>Distância: ${value.distancia || '---'} km</p>
+            <p>Trajeto: ${value.trajeto || '---'}</p>
+        `;
 
-                eventCard.innerHTML = `
-                    <h3>${value.nome}</h3>
-                    <p>Descrição: ${value.descricao || '---'}</p>
-                    <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
-                    <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
-                    <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
-                    <p>Local da preleção: ${value.localEncontro || '---'}</p>
-                    <p>Dificuldade: ${value.dificuldade || '---'}</p>
-                    <p>Distância: ${value.distancia || '---'} km</p>
-                    <p>Trajeto: ${value.trajeto || '---'}</p>
-                `;
+        /* inserir altimetria depois (precisa do cloud storage)
+        <p>Altimetria:<br>
+            ${value.percursoAltimetria
+            ? `<img src="${value.percursoAltimetria}" alt="altimetria" style="max-width: 100%;">`
+            : '---'}
+        </p>
+        */
 
-                /* inserir altimentria depois (precisa do cloud storage)
-                <p>Altimetria:<br>
-                    ${value.percursoAltimetria
-                    ? `<img src="${value.percursoAltimetria}" alt="altimetria" style="max-width: 100%;">`
-                    : '---'}
-                </p>
-                */
+        if (userEmail && adminEmails.includes(userEmail)) {
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'Remover';
+            removeBtn.className = 'danger eventBtn';
+            removeBtn.onclick = () => removeEvent(item.key);
 
-                if (userEmail && adminEmails.includes(userEmail)) {
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = 'Remover';
-                    removeBtn.className = 'danger eventBtn';
-                    removeBtn.onclick = () => removeEvent(item.key);
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Editar';
+            editBtn.className = 'alternative eventBtn';
+            editBtn.onclick = () => updateEvent(item.key);
 
-                    const editBtn = document.createElement('button');
-                    editBtn.textContent = 'Editar';
-                    editBtn.className = 'alternative eventBtn';
-                    editBtn.onclick = () => updateEvent(item.key);
+            const listarInscricoesBtn = document.createElement('button');
+            listarInscricoesBtn.textContent = 'Baixar Planilha de Inscrições';
+            listarInscricoesBtn.className = 'eventBtn';
+            listarInscricoesBtn.onclick = () => listarInscricoes(item.key, value.nome);
 
-                    const listarInscricoesBtn = document.createElement('button');
-                    listarInscricoesBtn.textContent = 'Baixar Planilha de Inscrições';
-                    listarInscricoesBtn.className = 'eventBtn';
-                    listarInscricoesBtn.onclick = () => listarInscricoes(item.key, value.nome);
+            eventCard.appendChild(removeBtn);
+            eventCard.appendChild(editBtn);
+            eventCard.appendChild(listarInscricoesBtn);
+        }
 
-                    eventCard.appendChild(removeBtn);
-                    eventCard.appendChild(editBtn);
-                    eventCard.appendChild(listarInscricoesBtn);
-                }
+        eventContainer.appendChild(eventCard);
+    });
 
-                eventContainer.appendChild(eventCard);
-            });
-
-            hideItem(loading);
-        })
-        .catch(err => {
-            console.error('Erro ao buscar usuário:', err);
-            hideItem(loading);
-        });
+    hideItem(loading);
 }

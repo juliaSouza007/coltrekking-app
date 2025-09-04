@@ -89,6 +89,7 @@ function subscribeToEvent(eventId, subscribeBtn) {
 
     const uid = user.uid;
     const email = user.email;
+    const name = user.displayName;
     const dataInscricao = Date.now(); // timestamp
 
     // Busca as informações adicionais do usuário no DB
@@ -100,6 +101,7 @@ function subscribeToEvent(eventId, subscribeBtn) {
 
             // Salva a inscrição com todas as infos
             return inscricaoRef.set({
+                name: name,
                 email: email,
                 dataInscricao: dataInscricao,
                 userId: userData.userId || '',
