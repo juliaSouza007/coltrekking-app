@@ -91,13 +91,13 @@
         </div>
 
         <div id="photos" class="tab-content">
-            <h2>Photos</h2>
+            <h3>Photos</h3>
             <p>Galeria de fotos dos eventos.</p>
             <div id="photoContainer">
                 <p id="photoCount">Carregando fotos...</p>
             </div>
 
-            <button class="alternative" id="createPhoto">Adicionar link</button>
+            <button type="button" class="alternative" id="createPhoto">Adicionar link</button>
 
             <div id="photoAdminForm" class="startHidden">
                 <h3>Adicionar link de fotos</h3>
@@ -106,7 +106,7 @@
                 <label>URL das Fotos:</label><br>
                 <input type="text" id="photoURL"><br>
                 <button id="addPhotoBtn">Adicionar Link de Fotos</button>
-                <button type="button" onclick="hideItem(photoAdminForm)">Cancelar</button>
+                <button type="button" class="danger" onclick="hideItem(photoAdminForm)">Cancelar</button>
             </div>
         </div>
 

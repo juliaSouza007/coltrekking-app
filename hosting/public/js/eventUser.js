@@ -6,10 +6,22 @@ var adminEmails = [
 
 // função para preencher a lista de eventos
 function fillEventList(dataSnapshot) {
-const eventContainer = document.getElementById('eventContainer');
-    eventContainer.innerHTML = ''; // limpa o container para evitar duplicações
-    const events = dataSnapshot.numChildren();
-    eventCount.innerHTML = 'Total de eventos: ' + events;
+    const eventContainer = document.getElementById('eventContainer');
+    const eventCount = document.getElementById('eventCount');
+    eventContainer.innerHTML = ''; // limpa container
+    eventCount.innerHTML = 'Carregando eventos...';
+
+    // converte dataSnapshot em array e ordena por dataInscricao decrescente
+    const eventosArray = [];
+    dataSnapshot.forEach(item => {
+        eventosArray.push({ key: item.key, value: item.val() });
+    });
+
+    eventosArray.sort((a, b) => {
+        const tA = a.value.dataInscricao ? new Date(a.value.dataInscricao).getTime() : 0;
+        const tB = b.value.dataInscricao ? new Date(b.value.dataInscricao).getTime() : 0;
+        return tB - tA; // mais recente primeiro
+    });
 
     const uid = localStorage.getItem('uid');
     if (!uid) {
@@ -20,9 +32,11 @@ const eventContainer = document.getElementById('eventContainer');
 
     firebase.database().ref('/users/' + uid).once('value')
         .then(userSnapshot => {
-            dataSnapshot.forEach(item => {
-                const value = item.val();
-                if (document.getElementById(item.key)) return;
+            eventCount.innerHTML = 'Total de eventos: ' + eventosArray.length;
+
+            eventosArray.forEach(item => {
+                const value = item.value;
+                if (document.getElementById(item.key)) return; // evita duplicação
 
                 const eventCard = document.createElement('div');
                 eventCard.className = 'event-card';
@@ -47,13 +61,14 @@ const eventContainer = document.getElementById('eventContainer');
                     : '---'}
                 </p>
                 */
-               
+
+                // botão de inscrição
                 const subscribeBtn = document.createElement('button');
                 subscribeBtn.textContent = 'Inscrever-se';
                 subscribeBtn.className = 'primary eventBtn';
                 subscribeBtn.disabled = false;
 
-                // Verifica inscrição
+                // verifica se o usuário já está inscrito
                 firebase.database().ref('inscricoes/' + item.key + '/' + uid)
                     .once('value')
                     .then(snapshot => {
@@ -77,6 +92,7 @@ const eventContainer = document.getElementById('eventContainer');
             hideItem(loading);
         });
 }
+
 
 //trata a inscrição em eventos
 function subscribeToEvent(eventId, subscribeBtn) {

@@ -286,3 +286,8 @@ textarea {
 .event-photo-links a:hover {
     text-decoration: underline;
 }
+
+#createPhoto {
+    display: block;
+    margin: 10px auto; /* centraliza horizontalmente */
+}

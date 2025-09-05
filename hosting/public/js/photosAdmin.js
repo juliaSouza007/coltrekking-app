@@ -4,7 +4,7 @@ var adminEmails = [
     "hh@teiacoltec.org"
 ];
 
-// referencias do banco
+// referências do banco
 const dbRefPhotosAdmin = firebase.database().ref('photos');
 const dbRefEventsPhoto = firebase.database().ref('event');
 
@@ -30,11 +30,21 @@ function fillPhotoList() {
                 const photoCard = document.createElement('div');
                 photoCard.className = 'photo-card';
 
+                // transforma a data em formato DD.MM.YYYY
+                const dataFormatada = new Date(eventData.data)
+                    .toLocaleDateString('pt-BR')
+                    .replace(/\//g, '.'); // troca / por .
+
                 let linksHTML = '---';
                 if (links.length > 0) {
                     linksHTML = links.map((link, i) => {
-                        return `<a href="${link}" target="_blank">Link ${i+1}</a>`;
-                    }).join(' | ');
+                        let nomeLink = `${eventData.nome}_${dataFormatada}`;
+                        let html = `<a href="${link}" target="_blank">${nomeLink}</a><br>`;
+                        if (isAdmin()) {
+                            html += ` <button class="danger" onclick="removeLink('${eventKey}', ${i})">Remover</button>`;
+                        }
+                        return html;
+                    }).join('<br>');
                 }
 
                 photoCard.innerHTML = `
@@ -48,11 +58,11 @@ function fillPhotoList() {
     });
 }
 
+
 // exibir o formulário de admin
 document.getElementById('createPhoto').onclick = function () {
     if (!isAdmin()) return;
     showItem(photoAdminForm);
-    hideItem(loading);
 }
 
 // popular select de eventos para o formulário de fotos (só admin)
@@ -99,8 +109,6 @@ function addLink(eventKey, url) {
             document.getElementById('photoURL').value = '';
         });
     });
-
-    hideItem(photoAdminForm);
 }
 
 // botão adicionar link
@@ -112,14 +120,16 @@ document.getElementById('addPhotoBtn').onclick = function(e) {
     addLink(eventKey, url);
 }
 
-// inicializa controles admin
+// inicializa controles admin e lista de fotos
 firebase.auth().onAuthStateChanged(user => {
-    if (user && isAdmin()) {
-        populateEventSelectForPhotos();
-        showItem(document.getElementById('createPhoto'));
-        showItem(photoAdminForm); // opcional: mostrar somente quando clicar
-    } else {
-        hideItem(document.getElementById('createPhoto'));
-        hideItem(photoAdminForm);
+    if (user) {
+        fillPhotoList(); // ✅ sempre mostra os cards ao logar
+        if (isAdmin()) {
+            populateEventSelectForPhotos();
+            showItem(document.getElementById('createPhoto'));
+        } else {
+            hideItem(document.getElementById('createPhoto'));
+            hideItem(photoAdminForm);
+        }
     }
 });

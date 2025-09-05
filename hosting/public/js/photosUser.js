@@ -18,8 +18,14 @@ function fillPhotoList() {
 
                 let linksHTML = '---';
                 if (links.length > 0) {
-                    linksHTML = links.map((link, i) => {
-                        return `<a href="${link}" target="_blank">Link ${i+1}</a>`;
+                    // formata a data do evento para DD.MM.YYYY
+                    const dataFormatada = new Date(eventData.data)
+                        .toLocaleDateString('pt-BR')
+                        .replace(/\//g, '.');
+
+                    linksHTML = links.map((link) => {
+                        const nomeLink = `${eventData.nome}_${dataFormatada}`;
+                        return `<a href="${link}" target="_blank">${nomeLink}</a>`;
                     }).join(' | ');
                 }
 
@@ -33,10 +39,3 @@ function fillPhotoList() {
         });
     });
 }
-
-// inicializa para usuários
-firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-        fillPhotoList();
-    }
-});

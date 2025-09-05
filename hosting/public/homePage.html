@@ -51,10 +51,10 @@
 
         <hr>
         <div class="tab-bar">
-            <button class="tab-button active" onclick="openTab('eventos')">Eventos</button>
-            <button class="tab-button" onclick="openTab('photos')">Photos</button>
-            <button class="tab-button" onclick="openTab('lista-negra')">Lista Negra</button>
-            <button class="tab-button" onclick="openTab('instrucoes')">Instruções Gerais</button>
+            <button class="tab-button active" onclick="openTab('eventos', event)">Eventos</button>
+            <button class="tab-button" onclick="openTab('photos', event), fillPhotoList()">Photos</button>
+            <button class="tab-button" onclick="openTab('lista-negra', event)">Lista Negra</button>
+            <button class="tab-button" onclick="openTab('instrucoes', event)">Instruções Gerais</button>
         </div>
 
         <div id="eventos" class="tab-content active">

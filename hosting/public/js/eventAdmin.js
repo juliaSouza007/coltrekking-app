@@ -235,19 +235,32 @@ editEventForm.onclick = function (event) {
     }
 };
 
-// função para preencher a lista de eventos para administradores
 function fillEventList(dataSnapshot) {
     const eventContainer = document.getElementById('eventContainer');
     eventContainer.innerHTML = '';
+
     const events = dataSnapshot.numChildren();
     eventCount.innerHTML = 'Total de eventos: ' + events;
 
-    // pega o email do usuário logado direto pelo Firebase Auth
     const user = firebase.auth().currentUser;
     const userEmail = user ? user.email : null;
 
+    // Transforma snapshot em array para ordenar
+    const eventsArray = [];
     dataSnapshot.forEach(item => {
-        const value = item.val();
+        eventsArray.push({ key: item.key, value: item.val() });
+    });
+
+    // Ordena pelo campo dataInscricao (mais recente acima)
+    eventsArray.sort((a, b) => {
+        const tA = a.value.dataInscricao ? new Date(a.value.dataInscricao).getTime() : 0;
+        const tB = b.value.dataInscricao ? new Date(b.value.dataInscricao).getTime() : 0;
+        return tB - tA; // decrescente
+    });
+
+    // Cria os cards ordenados
+    eventsArray.forEach(item => {
+        const value = item.value;
         if (document.getElementById(item.key)) return;
 
         const eventCard = document.createElement('div');
@@ -266,12 +279,12 @@ function fillEventList(dataSnapshot) {
             <p>Trajeto: ${value.trajeto || '---'}</p>
         `;
 
-        /* inserir altimetria depois (precisa do cloud storage)
-        <p>Altimetria:<br>
-            ${value.percursoAltimetria
-            ? `<img src="${value.percursoAltimetria}" alt="altimetria" style="max-width: 100%;">`
-            : '---'}
-        </p>
+        /* inserir altimentria depois (precisa do cloud storage)
+            <p>Altimetria:<br>
+                ${value.percursoAltimetria
+                ? `<img src="${value.percursoAltimetria}" alt="altimetria" style="max-width: 100%;">`
+                : '---'}
+            </p>
         */
 
         if (userEmail && adminEmails.includes(userEmail)) {
