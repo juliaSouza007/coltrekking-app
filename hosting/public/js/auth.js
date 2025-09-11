@@ -116,7 +116,6 @@ function toggleUserManager() {
         firebase.database().ref("users/" + uid).once("value")
             .then(snap => {
                 const role = snap.val()?.role;
-                console.log("Role do usuário atual:", role);
                 if (role !== "admin") {
                     alert("Você não tem permissão para gerenciar usuários.");
                     return;
@@ -149,24 +148,31 @@ function loadUsers() {
 
                 const userCard = document.createElement("div");
                 userCard.className = "user-card";
-                userCard.innerHTML = `
-                    <p><strong>Nome:</strong> ${user.nome || "---"}</p>
-                `;
 
-                // Se não for admin, mostra botão de promover
+                // container flex para o nome + botão
+                const row = document.createElement("div");
+                row.className = "user-row";
+
+                const nameElem = document.createElement("span");
+                nameElem.textContent = user.nome || "---";
+                row.appendChild(nameElem);
+
+                // botão dependendo do role
+                let actionBtn;
                 if (user.role !== "admin") {
-                    const promoteBtn = document.createElement("button");
-                    promoteBtn.textContent = "Promover a Admin";
-                    promoteBtn.className = "primary";
-                    promoteBtn.onclick = () => promoteToAdmin(uid);
-                    userCard.appendChild(promoteBtn);
+                    actionBtn = document.createElement("button");
+                    actionBtn.textContent = "Promover a Admin";
+                    actionBtn.className = "primary";
+                    actionBtn.onclick = () => promoteToAdmin(uid);
                 } else {
-                    const demoteBtn = document.createElement("button");
-                    demoteBtn.textContent = "Remover Admin";
-                    demoteBtn.className = "danger";
-                    demoteBtn.onclick = () => demoteFromAdmin(uid);
-                    userCard.appendChild(demoteBtn);
+                    actionBtn = document.createElement("button");
+                    actionBtn.textContent = "Remover Admin";
+                    actionBtn.className = "danger";
+                    actionBtn.onclick = () => demoteFromAdmin(uid);
                 }
+                row.appendChild(actionBtn);
+
+                userCard.appendChild(row);
 
                 userList.appendChild(userCard);
             });
