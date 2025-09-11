@@ -1,9 +1,3 @@
-//administradores do sistema
-var adminEmails = [
-    "a2023952624@teiacoltec.org",
-    "hh@teiacoltec.org"
-];
-
 //trata a exibicao do formulário de eventos
 document.getElementById('createEvent').onclick = function () {
     showItem(eventForm);
@@ -235,6 +229,7 @@ editEventForm.onclick = function (event) {
     }
 };
 
+// função para preencher a lista de eventos na página
 function fillEventList(dataSnapshot) {
     const eventContainer = document.getElementById('eventContainer');
     eventContainer.innerHTML = '';
@@ -243,73 +238,85 @@ function fillEventList(dataSnapshot) {
     eventCount.innerHTML = 'Total de eventos: ' + events;
 
     const user = firebase.auth().currentUser;
-    const userEmail = user ? user.email : null;
 
-    // Transforma snapshot em array para ordenar
-    const eventsArray = [];
-    dataSnapshot.forEach(item => {
-        eventsArray.push({ key: item.key, value: item.val() });
+    // função async para pegar a role do usuário logado
+    async function getUserRole(uid) {
+        const snap = await firebase.database().ref('users/' + uid + '/role').once('value');
+        return snap.val();
+    }
+
+    getUserRole(user.uid).then(userRole => {
+        const isAdmin = userRole === 'admin';
+
+        // Transforma snapshot em array para ordenar
+        const eventsArray = [];
+        dataSnapshot.forEach(item => {
+            eventsArray.push({ key: item.key, value: item.val() });
+        });
+
+        // Ordena pelo campo dataInscricao (mais recente acima)
+        eventsArray.sort((a, b) => {
+            const tA = a.value.dataInscricao ? new Date(a.value.dataInscricao).getTime() : 0;
+            const tB = b.value.dataInscricao ? new Date(b.value.dataInscricao).getTime() : 0;
+            return tB - tA; // decrescente
+        });
+
+        // Cria os cards ordenados
+        eventsArray.forEach(item => {
+            const value = item.value;
+            if (document.getElementById(item.key)) return;
+
+            const eventCard = document.createElement('div');
+            eventCard.className = 'event-card';
+            eventCard.id = item.key;
+
+            eventCard.innerHTML = `
+                <h3>${value.nome}</h3>
+                <p>Descrição: ${value.descricao || '---'}</p>
+                <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
+                <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
+                <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
+                <p>Local da preleção: ${value.localEncontro || '---'}</p>
+                <p>Dificuldade: ${value.dificuldade || '---'}</p>
+                <p>Distância: ${value.distancia || '---'} km</p>
+                <p>Trajeto: ${value.trajeto || '---'}</p>
+            `;
+
+            /* inserir altimentria depois (precisa do cloud storage)
+                <p>Altimetria:<br>
+                    ${value.percursoAltimetria
+                    ? `<img src="${value.percursoAltimetria}" alt="altimetria" style="max-width: 100%;">`
+                    : '---'}
+                </p>
+            */
+
+            if (isAdmin) {
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remover';
+                removeBtn.className = 'danger eventBtn';
+                removeBtn.onclick = () => removeEvent(item.key);
+
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Editar';
+                editBtn.className = 'alternative eventBtn';
+                editBtn.onclick = () => updateEvent(item.key);
+
+                const listarInscricoesBtn = document.createElement('button');
+                listarInscricoesBtn.textContent = 'Baixar Planilha de Inscrições';
+                listarInscricoesBtn.className = 'eventBtn';
+                listarInscricoesBtn.onclick = () => listarInscricoes(item.key, value.nome);
+
+                eventCard.appendChild(removeBtn);
+                eventCard.appendChild(editBtn);
+                eventCard.appendChild(listarInscricoesBtn);
+            }
+
+            eventContainer.appendChild(eventCard);
+        });
+
+        hideItem(loading);
+    }).catch(err => {
+        console.error("Erro ao buscar role do usuário:", err);
+        hideItem(loading);
     });
-
-    // Ordena pelo campo dataInscricao (mais recente acima)
-    eventsArray.sort((a, b) => {
-        const tA = a.value.dataInscricao ? new Date(a.value.dataInscricao).getTime() : 0;
-        const tB = b.value.dataInscricao ? new Date(b.value.dataInscricao).getTime() : 0;
-        return tB - tA; // decrescente
-    });
-
-    // Cria os cards ordenados
-    eventsArray.forEach(item => {
-        const value = item.value;
-        if (document.getElementById(item.key)) return;
-
-        const eventCard = document.createElement('div');
-        eventCard.className = 'event-card';
-        eventCard.id = item.key;
-
-        eventCard.innerHTML = `
-            <h3>${value.nome}</h3>
-            <p>Descrição: ${value.descricao || '---'}</p>
-            <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
-            <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
-            <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
-            <p>Local da preleção: ${value.localEncontro || '---'}</p>
-            <p>Dificuldade: ${value.dificuldade || '---'}</p>
-            <p>Distância: ${value.distancia || '---'} km</p>
-            <p>Trajeto: ${value.trajeto || '---'}</p>
-        `;
-
-        /* inserir altimentria depois (precisa do cloud storage)
-            <p>Altimetria:<br>
-                ${value.percursoAltimetria
-                ? `<img src="${value.percursoAltimetria}" alt="altimetria" style="max-width: 100%;">`
-                : '---'}
-            </p>
-        */
-
-        if (userEmail && adminEmails.includes(userEmail)) {
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = 'Remover';
-            removeBtn.className = 'danger eventBtn';
-            removeBtn.onclick = () => removeEvent(item.key);
-
-            const editBtn = document.createElement('button');
-            editBtn.textContent = 'Editar';
-            editBtn.className = 'alternative eventBtn';
-            editBtn.onclick = () => updateEvent(item.key);
-
-            const listarInscricoesBtn = document.createElement('button');
-            listarInscricoesBtn.textContent = 'Baixar Planilha de Inscrições';
-            listarInscricoesBtn.className = 'eventBtn';
-            listarInscricoesBtn.onclick = () => listarInscricoes(item.key, value.nome);
-
-            eventCard.appendChild(removeBtn);
-            eventCard.appendChild(editBtn);
-            eventCard.appendChild(listarInscricoesBtn);
-        }
-
-        eventContainer.appendChild(eventCard);
-    });
-
-    hideItem(loading);
 }

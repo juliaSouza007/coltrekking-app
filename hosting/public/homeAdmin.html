@@ -21,6 +21,11 @@
             <p id="userEmail"></p>
             <button class="alternative" onclick="signOut()">Sair</button>
             <button class="danger" onclick="deleteAccount()">Excluir conta</button>
+            <button class="alternative" onclick="toggleUserManager()">Gerenciar Usuários</button>
+            <div id="userManager" class="center" style="display: none;">
+                <h3>Gerenciamento de Usuários</h3>
+                <div id="userList"></div>
+            </div>
         </div>
 
         <hr>
@@ -128,8 +133,8 @@
 
     <!-- Scripts -->
     <script src="js/firebase.js"></script>
-    <script src="js/utilis.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/utilis.js"></script>
     <script src="js/tabs.js"></script>
     <script src="js/eventAdmin.js"></script>
     <script src="js/date.js"></script>
