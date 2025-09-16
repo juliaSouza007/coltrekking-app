@@ -138,6 +138,41 @@ p {
     border-radius: 100%;
 }
 
+/* Estilo do rodapé */
+#mainFooter {
+    background-color: #e5d7bd; /* cor de fundo */
+    color: #ffffff;           /* cor do texto */
+    padding: 20px 0;       /* espaço interno */
+    text-align: center;    /* centraliza texto */
+    position: relative;
+    border-radius: 10px;
+    bottom: 0;
+    width: 100%;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+}
+
+#mainFooter .footer-links a {
+    color: #6c4b18;
+    margin: 0 10px;
+    text-decoration: none;
+    transition: color 0.2s;
+    font-size: 1.7vw;
+    font-family: 'Bebas Neue', sans-serif;
+}
+
+#mainFooter .footer-links a:hover {
+    color: #f0a500; /* muda cor ao passar mouse */
+}
+
+#imgColtec {
+    width: 3%;
+    height: auto;
+    border-radius: 20px;
+    margin-top: 5px;
+    margin-right: 5px;
+}
+
 /* Home Page */
 #imgHP {
     width: 50%;

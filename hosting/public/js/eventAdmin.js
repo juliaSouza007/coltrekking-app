@@ -118,63 +118,84 @@ function updateEvent(key) {
 function listarInscricoes(eventId, nomeEvento = 'Evento') {
     const inscricoesRef = firebase.database().ref('inscricoes/' + eventId);
 
-    inscricoesRef.once('value').then(snapshot => {
-        if (!snapshot.exists()) {
-            alert(`Nenhuma inscrição encontrada para "${nomeEvento}".`);
-            return;
-        }
+    inscricoesRef.once('value')
+        .then(snapshot => {
+            if (!snapshot.exists()) {
+                alert(`Nenhuma inscrição encontrada para "${nomeEvento}".`);
+                return;
+            }
 
-        const inscricoes = [];
-        snapshot.forEach(child => {
-            const data = child.val();
-            inscricoes.push({
-                name: data.name || '---',
-                email: data.email || '---',
-                userClass: data.userClass || '---',
-                userCourse: data.userCourse || '---',
-                userId: data.userId || '---',
-                dataInscricao: data.dataInscricao || null // aqui deve ser timestamp salvo no banco
+            const inscricoes = [];
+            const promises = [];
+
+            snapshot.forEach(childSnap => {
+                const uid = childSnap.key; // UID do usuário
+                const inscricaoData = childSnap.val();
+
+                if (!uid) {
+                    console.warn("Inscrição sem UID:", inscricaoData);
+                    return;
+                }
+
+                // Busca os dados do usuário no nó "users"
+                const userRef = firebase.database().ref('users/' + uid);
+                const p = userRef.once('value').then(userSnap => {
+                    const userData = userSnap.val() || {};
+                    inscricoes.push({
+                        nome: userData.nome || '---',
+                        email: userData.email || inscricaoData.email || '---',
+                        turma: userData.userClass || inscricaoData.userClass || '---',
+                        curso: userData.userCourse || inscricaoData.userCourse || '---',
+                        cpf: userData.userId || inscricaoData.userId || '---',
+                        uid: uid,
+                        dataInscricao: inscricaoData.dataInscricao || null
+                    });
+                });
+
+                promises.push(p);
             });
-        });
 
-        // mais antigo primeiro (ordenando pelo timestamp)
-        inscricoes.sort((a, b) => (a.dataInscricao || 0) - (b.dataInscricao || 0));
+            return Promise.all(promises).then(() => inscricoes);
+        })
+        .then(inscricoes => {
+            if (!inscricoes || inscricoes.length === 0) return;
 
-        // Função para formatar timestamp no fuso de Brasília
-        function formatarData(ts) {
-            if (!ts) return '---';
-            const dateObj = new Date(ts);
-            return dateObj.toLocaleString('pt-BR', {
-                timeZone: 'America/Sao_Paulo',
-                hour12: false
+            // Ordena por data de inscrição (mais antiga primeiro)
+            inscricoes.sort((a, b) => (a.dataInscricao || 0) - (b.dataInscricao || 0));
+
+            // Formatar timestamp
+            function formatarData(ts) {
+                if (!ts) return '---';
+                return new Date(ts).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false });
+            }
+
+            // Monta CSV
+            const csvRows = [];
+            csvRows.push(["Nome", "Email", "Turma", "Curso", "CPF", "Data de Inscrição"]);
+
+            inscricoes.forEach(i => {
+                csvRows.push([
+                    `"${i.nome.replace(/"/g, '""')}"`,
+                    `"${i.email.replace(/"/g, '""')}"`,
+                    `"${i.turma}"`,
+                    `"${i.curso}"`,
+                    `"${(i.cpf || '---').replace(/"/g, '""')}"`,
+                    `"${formatarData(i.dataInscricao)}"`
+                ]);
             });
-        }
 
-        // Montar CSV com separador ";"
-        let csvRows = [];
-        csvRows.push(["Nome", "Email", "ID", "Turma", "Curso", "Data de Inscrição"]);
+            const csvString = csvRows.map(e => e.join(";")).join("\n");
+            const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
 
-        inscricoes.forEach(insc => {
-            csvRows.push([
-                `"${(insc.name || '').replace(/"/g, '""')}"`,
-                `"${(insc.email || '').replace(/"/g, '""')}"`,
-                `"${(insc.userId || '').replace(/"/g, '""')}"`,
-                `"${(insc.userClass || '').replace(/"/g, '""')}"`,
-                `"${(insc.userCourse || '').replace(/"/g, '""')}"`,
-                `"${formatarData(insc.dataInscricao)}"`
-            ]);
-        });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `${nomeEvento.replace(/\s+/g, '_')}_inscricoes.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
-        const csvString = csvRows.map(e => e.join(";")).join("\n");
-        const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
-
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", `${nomeEvento.replace(/\s+/g, '_')}_inscricoes.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    })
+            console.log(`CSV de ${inscricoes.length} inscrições gerado com sucesso.`);
+        })
         .catch(error => {
             console.error('Erro ao buscar inscrições:', error);
             alert('Erro ao buscar inscrições.');

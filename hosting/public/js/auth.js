@@ -16,27 +16,38 @@ firebase.auth().onAuthStateChanged(function(user) {
 
         userRef.once('value').then(snapshot => {
             if (!snapshot.exists()) {
-                // cria com role "user" por padrão
+                // Cria usuário com role "user" por padrão
                 const userData = {
                     uid: user.uid,
                     nome: user.displayName || '',
                     email: user.email,
                     role: "user"
                 };
-
-                userRef.set(userData)
-                .then(() => console.log('Usuário criado com sucesso!'))
-                .catch(error => console.error('Erro ao salvar usuário:', error));
+                return userRef.set(userData).then(() => {
+                    console.log('Usuário criado com sucesso!');
+                    return userData; // retorna os dados para usar adiante
+                });
             } else {
-                console.log("Usuário já existe no banco.");
+                const data = snapshot.val();
+                // Se existir mas não tiver role, adiciona
+                if (!data.role) {
+                    return userRef.update({ role: "user" }).then(() => {
+                        console.log('Role adicionada ao usuário existente.');
+                        data.role = "user";
+                        return data;
+                    });
+                }
+                return data; // já tinha role
             }
+        }).then(userData => {
+            // Aqui o usuário sempre tem role
+            localStorage.setItem('uid', user.uid);
+
+            // Pode usar role sem erro
+            showUserContent(user, userData.role);
+        }).catch(error => {
+            console.error("Erro ao ler/criar usuário:", error);
         });
-
-        // Guarda UID no localStorage
-        localStorage.setItem('uid', user.uid);
-
-        // Mostrar conteúdo do usuário
-        showUserContent(user);
 
     } else {
         localStorage.removeItem('uid'); 
@@ -138,6 +149,8 @@ function loadUsers() {
     const userList = document.getElementById("userList");
     userList.innerHTML = "<p>Carregando usuários...</p>";
 
+    const searchTerm = document.getElementById("userSearch")?.value.trim().toLowerCase() || "";
+
     firebase.database().ref("users").once("value")
         .then(snapshot => {
             userList.innerHTML = ""; // limpa antes de popular
@@ -146,10 +159,14 @@ function loadUsers() {
                 const user = childSnap.val();
                 const uid = childSnap.key;
 
+                // Filtra pelo início do nome
+                if (searchTerm && !user.nome.toLowerCase().startsWith(searchTerm)) {
+                    return; // ignora se não começar com o termo
+                }
+
                 const userCard = document.createElement("div");
                 userCard.className = "user-card";
 
-                // container flex para o nome + botão
                 const row = document.createElement("div");
                 row.className = "user-row";
 
@@ -157,7 +174,6 @@ function loadUsers() {
                 nameElem.textContent = user.nome || "---";
                 row.appendChild(nameElem);
 
-                // botão dependendo do role
                 let actionBtn;
                 if (user.role !== "admin") {
                     actionBtn = document.createElement("button");
@@ -173,9 +189,13 @@ function loadUsers() {
                 row.appendChild(actionBtn);
 
                 userCard.appendChild(row);
-
                 userList.appendChild(userCard);
             });
+
+            // Caso não encontre nenhum usuário
+            if (userList.innerHTML === "") {
+                userList.innerHTML = "<p>Nenhum usuário encontrado.</p>";
+            }
         })
         .catch(err => console.error("Erro ao carregar usuários:", err));
 }

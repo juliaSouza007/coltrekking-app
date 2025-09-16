@@ -68,20 +68,37 @@ function fillEventList(dataSnapshot) {
                 subscribeBtn.className = 'primary eventBtn';
                 subscribeBtn.disabled = false;
 
+                // botão de cancelar inscrição
+                const unsubscribeBtn = document.createElement('button');
+                unsubscribeBtn.textContent = 'Cancelar inscrição';
+                unsubscribeBtn.className = 'danger eventBtn';
+                unsubscribeBtn.style.display = 'none';
+
                 // verifica se o usuário já está inscrito
                 firebase.database().ref('inscricoes/' + item.key + '/' + uid)
                     .once('value')
                     .then(snapshot => {
                         if (snapshot.exists()) {
-                            subscribeBtn.disabled = true;
-                            subscribeBtn.textContent = 'Inscrito';
-                            subscribeBtn.classList.remove('primary');
-                            subscribeBtn.classList.add('disabled');
+                            subscribeBtn.style.display = 'none';
+                            unsubscribeBtn.style.display = 'inline-block';
                         }
                     });
 
-                subscribeBtn.onclick = () => subscribeToEvent(item.key, subscribeBtn);
+                subscribeBtn.onclick = () => {
+                    subscribeToEvent(item.key, subscribeBtn);
+                    subscribeBtn.style.display = 'none';
+                    unsubscribeBtn.style.display = 'inline-block';
+                };
+
+                unsubscribeBtn.onclick = () => {
+                    unsubscribeFromEvent(item.key, unsubscribeBtn);
+                    unsubscribeBtn.style.display = 'none';
+                    subscribeBtn.style.display = 'inline-block';
+                };
+
                 eventCard.appendChild(subscribeBtn);
+                eventCard.appendChild(unsubscribeBtn);
+
                 eventContainer.appendChild(eventCard);
             });
 
@@ -104,36 +121,51 @@ function subscribeToEvent(eventId, subscribeBtn) {
     }
 
     const uid = user.uid;
-    const email = user.email;
-    const name = user.displayName;
     const dataInscricao = Date.now(); // timestamp
 
-    // Busca as informações adicionais do usuário no DB
-    firebase.database().ref('users/' + uid).once('value')
-        .then(snapshot => {
-            const userData = snapshot.val() || {};
+    const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
 
-            const inscricaoRef = firebase.database().ref('inscricoes/' + eventId + '/' + uid);
+    inscricaoRef.set({
+        dataInscricao: dataInscricao
+    })
+    .then(() => {
+        alert('Inscrição realizada com sucesso!');
+        subscribeBtn.disabled = true;
+        subscribeBtn.textContent = 'Inscrito';
+        subscribeBtn.classList.remove('primary');
+        subscribeBtn.classList.add('disabled'); // opcional
+    })
+    .catch(error => {
+        console.error('Erro ao inscrever:', error);
+        alert('Erro ao realizar inscrição. Tente novamente.');
+    });
+}
 
-            // Salva a inscrição com todas as infos
-            return inscricaoRef.set({
-                name: name,
-                email: email,
-                dataInscricao: dataInscricao,
-                userId: userData.userId || '',
-                userClass: userData.userClass || '',
-                userCourse: userData.userCourse || ''
-            });
-        })
+//trata a desistência de eventos
+function unsubscribeFromEvent(eventId, unsubscribeBtn) {
+    const user = firebase.auth().currentUser;
+
+    if (!user) {
+        alert('Você precisa estar logado para cancelar a inscrição.');
+        return;
+    }
+
+    const confirmar = confirm("Tem certeza que deseja cancelar sua inscrição?");
+    if (!confirmar) return; // se cancelar, não faz nada
+
+    const uid = user.uid;
+    const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
+
+    inscricaoRef.remove()
         .then(() => {
-            alert('Inscrição realizada com sucesso!');
-            subscribeBtn.disabled = true;
-            subscribeBtn.textContent = 'Inscrito';
-            subscribeBtn.classList.remove('primary');
-            subscribeBtn.classList.add('disabled'); // opcional
+            alert('Inscrição removida com sucesso!');
+            unsubscribeBtn.disabled = true;
+            unsubscribeBtn.textContent = 'Inscrição cancelada';
+            unsubscribeBtn.classList.remove('danger');
+            unsubscribeBtn.classList.add('disabled'); // opcional
         })
         .catch(error => {
-            console.error('Erro ao inscrever:', error);
-            alert('Erro ao realizar inscrição. Tente novamente.');
+            console.error('Erro ao remover inscrição:', error);
+            alert('Erro ao cancelar inscrição. Tente novamente.');
         });
 }

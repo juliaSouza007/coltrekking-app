@@ -22,8 +22,17 @@
             <button class="alternative" onclick="signOut()">Sair</button>
             <button class="danger" onclick="deleteAccount()">Excluir conta</button>
             <button class="alternative" onclick="toggleUserManager()">Gerenciar Usuários</button>
+
             <div id="userManager" class="center" style="display: none;">
                 <h3>Gerenciamento de Usuários</h3>
+
+                <!-- Campo de busca -->
+                <div id="userSearchContainer" style="margin-bottom: 15px;">
+                    <input type="text" id="userSearch" placeholder="Buscar usuário por nome..." oninput="loadUsers()"
+                        style="padding: 6px; width: 70%; max-width: 300px;" />
+                </div>
+
+                <!-- Lista renderizada pelo JS -->
                 <div id="userList"></div>
             </div>
         </div>
@@ -140,11 +149,9 @@
     <script src="js/date.js"></script>
     <script src="js/photosAdmin.js"></script>
 
-    <!--
     <script>
         checkAuth(); //verifica se o usuario está logado com a conta institucional
     </script>   
-    -->
 </body>
 
 </html>
