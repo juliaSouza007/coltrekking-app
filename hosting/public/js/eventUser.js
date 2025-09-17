@@ -1,9 +1,3 @@
-//administradores do sistema
-var adminEmails = [
-    "a2023952624@teiacoltec.org",
-    "hh@teiacoltec.org"
-];
-
 // função para preencher a lista de eventos
 function fillEventList(dataSnapshot) {
     const eventContainer = document.getElementById('eventContainer');
@@ -110,7 +104,6 @@ function fillEventList(dataSnapshot) {
         });
 }
 
-
 //trata a inscrição em eventos
 function subscribeToEvent(eventId, subscribeBtn) {
     const user = firebase.auth().currentUser;
@@ -121,24 +114,40 @@ function subscribeToEvent(eventId, subscribeBtn) {
     }
 
     const uid = user.uid;
-    const dataInscricao = Date.now(); // timestamp
 
-    const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
+    // Busca informações do usuário no BD
+    firebase.database().ref("users/" + uid).once("value")
+        .then(snapshot => {
+            const userData = snapshot.val();
 
-    inscricaoRef.set({
-        dataInscricao: dataInscricao
-    })
-    .then(() => {
-        alert('Inscrição realizada com sucesso!');
-        subscribeBtn.disabled = true;
-        subscribeBtn.textContent = 'Inscrito';
-        subscribeBtn.classList.remove('primary');
-        subscribeBtn.classList.add('disabled'); // opcional
-    })
-    .catch(error => {
-        console.error('Erro ao inscrever:', error);
-        alert('Erro ao realizar inscrição. Tente novamente.');
-    });
+            // Verifica se os campos obrigatórios estão preenchidos
+            if (!userData || !userData.userId || !userData.userClass || !userData.userCourse) {
+                alert("⚠️ Antes de se inscrever, preencha suas informações pessoais (RA, Turma e Curso).");
+                throw new Error("Dados pessoais incompletos"); // força o catch
+            }
+
+            const dataInscricao = Date.now(); // timestamp
+            const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
+
+            // só chega aqui se passou na validação
+            return inscricaoRef.set({
+                dataInscricao: dataInscricao
+            });
+        })
+        .then(() => {
+            // só dispara se realmente inscreveu
+            alert('Inscrição realizada com sucesso!');
+            subscribeBtn.disabled = true;
+            subscribeBtn.textContent = 'Inscrito';
+            subscribeBtn.classList.remove('primary');
+            subscribeBtn.classList.add('disabled'); // opcional
+        })
+        .catch(error => {
+            if (error.message !== "Dados pessoais incompletos") {
+                console.error('Erro ao inscrever:', error);
+                alert('Erro ao realizar inscrição. Tente novamente.');
+            }
+        });
 }
 
 //trata a desistência de eventos
