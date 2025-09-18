@@ -127,6 +127,33 @@
         <div id="lista-negra" class="tab-content">
             <h2>Lista Negra</h2>
             <p>Pessoas bloqueadas de irem nos próximos eventos.</p>
+            <div id="regrasBloqueio" class="center">
+                <h2>Comportamentos que suspendem a participação</h2>
+                <div class="regra-card">
+                    <h4>Comportamento inadequado</h4>
+                    <p>Participantes que desrespeitam colegas, instrutores ou organizadores poderão ser suspensos.</p>
+                </div>
+                <div class="regra-card">
+                    <h4>Faltas injustificadas</h4>
+                    <p>Faltas sem aviso prévio ou justificativa plausível também levam à suspensão temporária ou
+                        definitiva.</p>
+                </div>
+
+                <button type="button" class="alternative" id="blockUser" onclick="toggleBlockManager()">Gerenciar
+                    Bloqueios</button>
+
+                <div id="blockManager" class="center" style="display: none; margin-top:12px;">
+                    <h3>Gerenciamento de Bloqueios</h3>
+
+                    <!-- Campo de pesquisa -->
+                    <input type="text" id="blockSearch" placeholder="Buscar usuário por nome..."
+                        oninput="loadBlockManager()" style="padding: 6px; width: 70%; max-width: 300px;" />
+
+                    <!-- Lista renderizada pelo JS -->
+                    <div id="blockList"></div>
+                </div>
+
+            </div>
         </div>
 
         <div id="instrucoes" class="tab-content">
@@ -136,11 +163,14 @@
 
         <footer id="mainFooter">
             <div class="footer-content">
-                <p>Site desenvolvido por Júlia Martins Souza para o Projeto de Ensino Coltrekking do Colégio Técnico da UFMG</p>
-                <h3><img src="images/logoColtec.png" id="imgColtec" alt="Logo Coltec"> &copy; 2025 Coltrekking. Todos os direitos reservados.</h3>
+                <p>Site desenvolvido por Júlia Martins Souza para o Projeto de Ensino Coltrekking do Colégio Técnico da
+                    UFMG</p>
+                <h3><img src="images/logoColtec.png" id="imgColtec" alt="Logo Coltec"> &copy; 2025 Coltrekking. Todos os
+                    direitos reservados.</h3>
                 <div class="footer-links">
                     <a href="https://www.coltec.ufmg.br" target="_blank">Institucional</a>
-                    <a href="https://www.linkedin.com/in/j%C3%BAlia-martins-souza-997ba6350/" target="_blank">Contato</a>
+                    <a href="https://www.linkedin.com/in/j%C3%BAlia-martins-souza-997ba6350/"
+                        target="_blank">Contato</a>
                 </div>
             </div>
         </footer>
@@ -159,12 +189,13 @@
     <script src="js/eventAdmin.js"></script>
     <script src="js/date.js"></script>
     <script src="js/photosAdmin.js"></script>
+    <script src="js/listaNegraAdmin.js"></script>
 
     <!--
     <script>
         checkAuth(); //verifica se o usuario está logado com a conta institucional
     </script> 
-    -->   
+    -->
 </body>
 
 </html>

@@ -16,12 +16,13 @@ firebase.auth().onAuthStateChanged(function(user) {
 
         userRef.once('value').then(snapshot => {
             if (!snapshot.exists()) {
-                // Cria usuário com role "user" por padrão
+                // Cria usuário com role "user" e able: true por padrão
                 const userData = {
                     uid: user.uid,
                     nome: user.displayName || '',
                     email: user.email,
-                    role: "user"
+                    role: "user",
+                    able: true
                 };
                 return userRef.set(userData).then(() => {
                     console.log('Usuário criado com sucesso!');
@@ -29,22 +30,35 @@ firebase.auth().onAuthStateChanged(function(user) {
                 });
             } else {
                 const data = snapshot.val();
-                // Se existir mas não tiver role, adiciona
+                let updates = {};
+
+                // Se não tiver role, define como "user"
                 if (!data.role) {
-                    return userRef.update({ role: "user" }).then(() => {
-                        console.log('Role adicionada ao usuário existente.');
-                        data.role = "user";
+                    updates.role = "user";
+                    data.role = "user";
+                }
+
+                // Se não tiver o campo able, define como true
+                if (data.able === undefined) {
+                    updates.able = true;
+                    data.able = true;
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    return userRef.update(updates).then(() => {
+                        console.log('Dados de usuário atualizados:', updates);
                         return data;
                     });
                 }
-                return data; // já tinha role
+
+                return data; // já estava completo
             }
         }).then(userData => {
-            // Aqui o usuário sempre tem role
+            // Aqui o usuário sempre tem role e able definidos
             localStorage.setItem('uid', user.uid);
 
-            // Pode usar role sem erro
-            showUserContent(user, userData.role);
+            // Pode usar role/able sem erro
+            showUserContent(user, userData.role, userData.able);
         }).catch(error => {
             console.error("Erro ao ler/criar usuário:", error);
         });

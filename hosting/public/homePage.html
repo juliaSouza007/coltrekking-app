@@ -76,7 +76,21 @@
 
         <div id="lista-negra" class="tab-content">
             <h2>Lista Negra</h2>
-            <p>Pessoas bloqueadas de irem nos próximos eventos.</p>
+            <div id="regrasBloqueio" class="center">
+                <h2>Comportamentos que suspendem a participação</h2>
+                <div class="regra-card">
+                    <h4>Comportamento inadequado</h4>
+                    <p>Participantes que desrespeitam colegas, instrutores ou organizadores poderão ser suspensos.</p>
+                </div>
+                <div class="regra-card">
+                    <h4>Faltas injustificadas</h4>
+                    <p>Faltas sem aviso prévio ou justificativa plausível também levam à suspensão temporária ou
+                        definitiva.</p>
+                </div>
+
+                <div id="userBlockStatus"></div>
+                <button onclick="showBlockStatus()">Verificar status</button>
+            </div>
         </div>
 
         <div id="instrucoes" class="tab-content">
@@ -86,11 +100,14 @@
 
         <footer id="mainFooter">
             <div class="footer-content">
-                <p>Site desenvolvido por Júlia Martins Souza para o Projeto de Ensino Coltrekking do Colégio Técnico da UFMG</p>
-                <h3><img src="images/logoColtec.png" id="imgColtec" alt="Logo Coltec"> &copy; 2025 Coltrekking. Todos os direitos reservados.</h3>
+                <p>Site desenvolvido por Júlia Martins Souza para o Projeto de Ensino Coltrekking do Colégio Técnico da
+                    UFMG</p>
+                <h3><img src="images/logoColtec.png" id="imgColtec" alt="Logo Coltec"> &copy; 2025 Coltrekking. Todos os
+                    direitos reservados.</h3>
                 <div class="footer-links">
                     <a href="https://www.coltec.ufmg.br" target="_blank">Institucional</a>
-                    <a href="https://www.linkedin.com/in/j%C3%BAlia-martins-souza-997ba6350/" target="_blank">Contato</a>
+                    <a href="https://www.linkedin.com/in/j%C3%BAlia-martins-souza-997ba6350/"
+                        target="_blank">Contato</a>
                 </div>
             </div>
         </footer>
@@ -109,12 +126,13 @@
     <script src="js/eventUser.js"></script>
     <script src="js/date.js"></script>
     <script src="js/photosUser.js"></script>
+    <script src="js/listaNegraUser.js"></script>
 
     <!--
     <script>
         checkAuth(); //verifica se o usuario está logado com a conta institucional
     </script> 
-    -->  
+    -->
 </body>
 
 </html>

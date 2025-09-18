@@ -5,7 +5,6 @@ function fillEventList(dataSnapshot) {
     eventContainer.innerHTML = ''; // limpa container
     eventCount.innerHTML = 'Carregando eventos...';
 
-    // converte dataSnapshot em array e ordena por dataInscricao decrescente
     const eventosArray = [];
     dataSnapshot.forEach(item => {
         eventosArray.push({ key: item.key, value: item.val() });
@@ -56,13 +55,11 @@ function fillEventList(dataSnapshot) {
                 </p>
                 */
 
-                // botão de inscrição
                 const subscribeBtn = document.createElement('button');
                 subscribeBtn.textContent = 'Inscrever-se';
                 subscribeBtn.className = 'primary eventBtn';
                 subscribeBtn.disabled = false;
 
-                // botão de cancelar inscrição
                 const unsubscribeBtn = document.createElement('button');
                 unsubscribeBtn.textContent = 'Cancelar inscrição';
                 unsubscribeBtn.className = 'danger eventBtn';
@@ -78,21 +75,17 @@ function fillEventList(dataSnapshot) {
                         }
                     });
 
+                // chama subscribe passando ambos os botões
                 subscribeBtn.onclick = () => {
-                    subscribeToEvent(item.key, subscribeBtn);
-                    subscribeBtn.style.display = 'none';
-                    unsubscribeBtn.style.display = 'inline-block';
+                    subscribeToEvent(item.key, subscribeBtn, unsubscribeBtn);
                 };
 
                 unsubscribeBtn.onclick = () => {
-                    unsubscribeFromEvent(item.key, unsubscribeBtn);
-                    unsubscribeBtn.style.display = 'none';
-                    subscribeBtn.style.display = 'inline-block';
+                    unsubscribeFromEvent(item.key, unsubscribeBtn, subscribeBtn);
                 };
 
                 eventCard.appendChild(subscribeBtn);
                 eventCard.appendChild(unsubscribeBtn);
-
                 eventContainer.appendChild(eventCard);
             });
 
@@ -104,10 +97,9 @@ function fillEventList(dataSnapshot) {
         });
 }
 
-//trata a inscrição em eventos
-function subscribeToEvent(eventId, subscribeBtn) {
+// funcção para inscrever em evento
+function subscribeToEvent(eventId, subscribeBtn, unsubscribeBtn) {
     const user = firebase.auth().currentUser;
-
     if (!user) {
         alert('Você precisa estar logado para se inscrever.');
         return;
@@ -115,52 +107,48 @@ function subscribeToEvent(eventId, subscribeBtn) {
 
     const uid = user.uid;
 
-    // Busca informações do usuário no BD
     firebase.database().ref("users/" + uid).once("value")
         .then(snapshot => {
             const userData = snapshot.val();
 
-            // Verifica se os campos obrigatórios estão preenchidos
             if (!userData || !userData.userId || !userData.userClass || !userData.userCourse) {
                 alert("⚠️ Antes de se inscrever, preencha suas informações pessoais (RA, Turma e Curso).");
-                throw new Error("Dados pessoais incompletos"); // força o catch
+                throw new Error("Dados pessoais incompletos");
             }
 
-            const dataInscricao = Date.now(); // timestamp
+            if (userData.able === false) {
+                alert("Você está suspenso e não pode se inscrever em eventos.");
+                throw new Error("Usuário bloqueado");
+            }
+
+            const dataInscricao = Date.now();
             const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
 
-            // só chega aqui se passou na validação
-            return inscricaoRef.set({
-                dataInscricao: dataInscricao
-            });
+            return inscricaoRef.set({ dataInscricao });
         })
         .then(() => {
-            // só dispara se realmente inscreveu
             alert('Inscrição realizada com sucesso!');
-            subscribeBtn.disabled = true;
-            subscribeBtn.textContent = 'Inscrito';
-            subscribeBtn.classList.remove('primary');
-            subscribeBtn.classList.add('disabled'); // opcional
+            subscribeBtn.style.display = 'none';
+            unsubscribeBtn.style.display = 'inline-block';
         })
         .catch(error => {
-            if (error.message !== "Dados pessoais incompletos") {
+            if (error.message !== "Dados pessoais incompletos" && error.message !== "Usuário bloqueado") {
                 console.error('Erro ao inscrever:', error);
                 alert('Erro ao realizar inscrição. Tente novamente.');
             }
         });
 }
 
-//trata a desistência de eventos
-function unsubscribeFromEvent(eventId, unsubscribeBtn) {
+// função para cancelar inscrição
+function unsubscribeFromEvent(eventId, unsubscribeBtn, subscribeBtn) {
     const user = firebase.auth().currentUser;
-
     if (!user) {
         alert('Você precisa estar logado para cancelar a inscrição.');
         return;
     }
 
     const confirmar = confirm("Tem certeza que deseja cancelar sua inscrição?");
-    if (!confirmar) return; // se cancelar, não faz nada
+    if (!confirmar) return;
 
     const uid = user.uid;
     const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
@@ -168,10 +156,8 @@ function unsubscribeFromEvent(eventId, unsubscribeBtn) {
     inscricaoRef.remove()
         .then(() => {
             alert('Inscrição removida com sucesso!');
-            unsubscribeBtn.disabled = true;
-            unsubscribeBtn.textContent = 'Inscrição cancelada';
-            unsubscribeBtn.classList.remove('danger');
-            unsubscribeBtn.classList.add('disabled'); // opcional
+            unsubscribeBtn.style.display = 'none';
+            subscribeBtn.style.display = 'inline-block';
         })
         .catch(error => {
             console.error('Erro ao remover inscrição:', error);
