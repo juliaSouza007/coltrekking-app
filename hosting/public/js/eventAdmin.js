@@ -115,7 +115,7 @@ function updateEvent(key) {
 }
 
 // botão para listar inscrições de um evento e exportar CSV
-function listarInscricoes(eventId, nomeEvento = 'Evento') {
+function listarInscricoes(eventId, nomeEvento = 'Evento', dataInicioEvento = null) {
     const inscricoesRef = firebase.database().ref('inscricoes/' + eventId);
 
     inscricoesRef.once('value')
@@ -129,7 +129,7 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
             const promises = [];
 
             snapshot.forEach(childSnap => {
-                const uid = childSnap.key; // UID do usuário
+                const uid = childSnap.key;
                 const inscricaoData = childSnap.val();
 
                 if (!uid) {
@@ -137,7 +137,13 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
                     return;
                 }
 
-                // Busca os dados do usuário no nó "users"
+                // Filtra pelo timestamp da inscrição se dataInicioEvento foi informada
+                if (dataInicioEvento && inscricaoData.dataInscricao) {
+                    if (inscricaoData.dataInscricao < new Date(dataInicioEvento).getTime()) {
+                        return; // ignora inscrições antes do início do evento
+                    }
+                }
+
                 const userRef = firebase.database().ref('users/' + uid);
                 const p = userRef.once('value').then(userSnap => {
                     const userData = userSnap.val() || {};
@@ -158,18 +164,19 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
             return Promise.all(promises).then(() => inscricoes);
         })
         .then(inscricoes => {
-            if (!inscricoes || inscricoes.length === 0) return;
+            if (!inscricoes || inscricoes.length === 0) {
+                alert('Nenhuma inscrição válida encontrada.');
+                return;
+            }
 
             // Ordena por data de inscrição (mais antiga primeiro)
             inscricoes.sort((a, b) => (a.dataInscricao || 0) - (b.dataInscricao || 0));
 
-            // Formatar timestamp
             function formatarData(ts) {
                 if (!ts) return '---';
                 return new Date(ts).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false });
             }
 
-            // Monta CSV
             const csvRows = [];
             csvRows.push(["Nome", "Email", "Turma", "Curso", "CPF", "Data de Inscrição"]);
 
@@ -193,8 +200,6 @@ function listarInscricoes(eventId, nomeEvento = 'Evento') {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
-            console.log(`CSV de ${inscricoes.length} inscrições gerado com sucesso.`);
         })
         .catch(error => {
             console.error('Erro ao buscar inscrições:', error);

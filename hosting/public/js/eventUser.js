@@ -58,7 +58,28 @@ function fillEventList(dataSnapshot) {
                 const subscribeBtn = document.createElement('button');
                 subscribeBtn.textContent = 'Inscrever-se';
                 subscribeBtn.className = 'primary eventBtn';
-                subscribeBtn.disabled = false;
+                subscribeBtn.disabled = true; // começa desativado
+                subscribeBtn.style.backgroundColor = '#ccc';
+                subscribeBtn.style.cursor = 'not-allowed';
+
+                // pega a hora do evento
+                const eventStart = value.dataInscricao ? new Date(value.dataInscricao) : null;
+
+                // verifica se já é hora de inscrição
+                function checkSubscriptionTime() {
+                    if (!eventStart) return;
+
+                    if (Date.now() >= eventStart.getTime()) {
+                        subscribeBtn.disabled = false;
+                        subscribeBtn.style.backgroundColor = ''; // cor normal
+                        subscribeBtn.style.cursor = 'pointer';
+                        clearInterval(subscriptionTimer); // para de checar
+                    }
+                }
+
+                // chama a função a cada segundo até habilitar
+                const subscriptionTimer = setInterval(checkSubscriptionTime, 100);
+                checkSubscriptionTime(); // checa imediatamente
 
                 const unsubscribeBtn = document.createElement('button');
                 unsubscribeBtn.textContent = 'Cancelar inscrição';
@@ -77,6 +98,14 @@ function fillEventList(dataSnapshot) {
 
                 // chama subscribe passando ambos os botões
                 subscribeBtn.onclick = () => {
+                    const eventStart = new Date(value.dataInscricao);
+
+                    //camada extra de segurança
+                    if (Date.now() < eventStart.getTime()) {
+                        alert("⚠️ Inscrições ainda não começaram para este evento.");
+                        return;
+                    }
+
                     subscribeToEvent(item.key, subscribeBtn, unsubscribeBtn);
                 };
 
@@ -123,7 +152,6 @@ function subscribeToEvent(eventId, subscribeBtn, unsubscribeBtn) {
 
             const dataInscricao = Date.now();
             const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
-
             return inscricaoRef.set({ dataInscricao });
         })
         .then(() => {
@@ -132,7 +160,7 @@ function subscribeToEvent(eventId, subscribeBtn, unsubscribeBtn) {
             unsubscribeBtn.style.display = 'inline-block';
         })
         .catch(error => {
-            if (error.message !== "Dados pessoais incompletos" && error.message !== "Usuário bloqueado") {
+            if (!["Dados pessoais incompletos", "Usuário bloqueado", "Inscrição antes do horário"].includes(error.message)) {
                 console.error('Erro ao inscrever:', error);
                 alert('Erro ao realizar inscrição. Tente novamente.');
             }
