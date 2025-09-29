@@ -1,6 +1,7 @@
 // abre/fecha a área de gerenciamento de bloqueios
 function toggleBlockManager() {
     const div = document.getElementById("blockManager");
+    const btn = document.querySelector("button[onclick='toggleBlockManager()']"); // pega o botão
     const user = firebase.auth().currentUser;
 
     if (!user) {
@@ -8,26 +9,26 @@ function toggleBlockManager() {
         return;
     }
 
-    // Recarrega info do usuário para garantir dados atualizados
     user.reload().then(() => {
         const uid = user.uid;
 
         firebase.database().ref("users/" + uid).once("value")
             .then(snap => {
                 const data = snap.val();
-                const role = data ? data.role : null; // proteção
+                const role = data ? data.role : null;
 
                 if (role !== "admin") {
                     alert("Você não tem permissão para gerenciar bloqueios.");
                     return;
                 }
 
-                // Alterna a visibilidade da div
                 if (div.style.display === "none" || div.style.display === "") {
                     div.style.display = "block";
-                    loadBlockManager(); // carrega a lista de bloqueio
+                    if (btn) btn.textContent = "Fechar"; // muda texto
+                    loadBlockManager();
                 } else {
                     div.style.display = "none";
+                    if (btn) btn.textContent = "Gerenciar Bloqueios"; // volta ao original
                 }
             })
             .catch(err => {
@@ -48,6 +49,8 @@ function loadBlockManager() {
         .then(snapshot => {
             blockList.innerHTML = ""; // limpa antes de popular
 
+            const users = [];
+
             snapshot.forEach(childSnap => {
                 const user = childSnap.val();
                 const uid = childSnap.key;
@@ -57,9 +60,21 @@ function loadBlockManager() {
 
                 // Filtra pelo início do nome
                 if (searchTerm && !user.nome.toLowerCase().startsWith(searchTerm)) {
-                    return; // ignora se não começar com o termo
+                    return;
                 }
 
+                users.push({ ...user, uid });
+            });
+
+            // Ordena: bloqueados primeiro, depois alfabética
+            users.sort((a, b) => {
+                if (a.able === false && b.able !== false) return -1; // bloqueado primeiro
+                if (a.able !== false && b.able === false) return 1;  // desbloqueado depois
+                return (a.nome || "").localeCompare(b.nome || "");   // ordem alfabética
+            });
+
+            // Renderiza os usuários
+            users.forEach(user => {
                 const userCard = document.createElement("div");
                 userCard.className = "user-card";
 
@@ -75,12 +90,12 @@ function loadBlockManager() {
                     actionBtn = document.createElement("button");
                     actionBtn.textContent = "Desbloquear";
                     actionBtn.className = "primary";
-                    actionBtn.onclick = () => unblockUser(uid);
+                    actionBtn.onclick = () => unblockUser(user.uid);
                 } else {
                     actionBtn = document.createElement("button");
                     actionBtn.textContent = "Bloquear";
                     actionBtn.className = "danger";
-                    actionBtn.onclick = () => blockUser(uid);
+                    actionBtn.onclick = () => blockUser(user.uid);
                 }
 
                 row.appendChild(actionBtn);
@@ -89,7 +104,7 @@ function loadBlockManager() {
             });
 
             // Caso não encontre nenhum usuário
-            if (blockList.innerHTML === "") {
+            if (users.length === 0) {
                 blockList.innerHTML = "<p>Nenhum usuário encontrado.</p>";
             }
         })

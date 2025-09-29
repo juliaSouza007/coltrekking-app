@@ -87,48 +87,101 @@
                     <p>Faltas sem aviso prévio ou justificativa plausível também levam à suspensão temporária ou
                         definitiva.</p>
                 </div>
-
-                <div id="userBlockStatus"></div>
-                <button onclick="showBlockStatus()">Verificar status</button>
             </div>
         </div>
 
         <div id="instrucoes" class="tab-content">
             <h2>Instruções Gerais</h2>
             <p>Orientações importantes para todos os participantes.</p>
-        </div>
-
-        <footer id="mainFooter">
-            <div class="footer-content">
-                <p>Site desenvolvido por Júlia Martins Souza para o Projeto de Ensino Coltrekking do Colégio Técnico da
-                    UFMG</p>
-                <h3><img src="images/logoColtec.png" id="imgColtec" alt="Logo Coltec"> &copy; 2025 Coltrekking. Todos os
-                    direitos reservados.</h3>
-                <div class="footer-links">
-                    <a href="https://www.coltec.ufmg.br" target="_blank">Institucional</a>
-                    <a href="https://www.linkedin.com/in/j%C3%BAlia-martins-souza-997ba6350/"
-                        target="_blank">Contato</a>
+            <div id="instrucoesGerais">
+                <div class="instrucao-card">
+                    <h4>Recomendações</h4>
+                    <ul>
+                        <li>Chegar com 15 minutos de antecedência no ponto de encontro</li>
+                        <li>Informar qualquer condição médica especial (alergias, asma, etc.)</li>
+                        <li>Usar equipamentos em boas condições: mochila, sapato, roupa...</li>
+                        <li>Seguir as instruções dos guias e organizadores</li>
+                        <li>Respeitar o meio ambiente e não deixar lixo para trás</li>
+                        <li>Manter-se hidratado</li>
+                        <li>Usar protetor solar e repelente</li>
+                        <li>Em caso de emergência, comunicar imediatamente um organizador</li>
+                    </ul>
+                </div>
+                <div class="instrucao-card">
+                    <h4>O que levar e/ou usar</h4>
+                    <ul>
+                        <li>Blusa de manga comprida (de preferência com proteção UV)</li>
+                        <li>Calça</li>
+                        <li>Autorização dos pais (impressa ou escrita à mão)</li>
+                        <li>Carteira de Identidade</li>
+                        <li>Protetor solar</li>
+                        <li>Lanche</li>
+                        <li>Pelo menos 2 litros de água (garrafa PET)</li>
+                        <li>Saco plástico</li>
+                        <li>Boné</li>
+                        <li>Roupa de Banho e Toalha</li>
+                        <li>Repelente</li>
+                        <li>Muda de roupa limpa</li>
+                        <li>Chinelo (para colocar na hora de voltar)</li>
+                    </ul>
+                </div>
+                <div class="instrucao-card">
+                    <h4>Sugestão de Lanche</h4>
+                    <ul>
+                        <li>Barra de cereal</li>
+                        <li>Frutas (evitar cítricas)</li>
+                        <li>Sanduíches naturais</li>
+                        <li>Tortas salgadas</li>
+                        <li>Castanhas</li>
+                        <li>Sucos</li>
+                        <li>Gatorade/Powerade</li>
+                    </ul>
+                </div>
+                <div class="instrucao-card alerta-card">
+                    <h4>ATENÇÃO! Condicionamento Físico e Psicológico</h4>
+                    <p>
+                        É fundamental que todos os participantes estejam atentos ao seu condicionamento físico e
+                        psicológico.
+                        As trilhas e caminhadas exigem preparo, resistência e disposição para lidar com desafios
+                        naturais, como subidas,
+                        terrenos irregulares e condições climáticas diversas. Além disso, manter o equilíbrio emocional
+                        contribui para a segurança e o bem-estar de todo o grupo.
+                    </p>
                 </div>
             </div>
-        </footer>
-    </div>
 
-    <!-- Recursos do Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-database.js"></script>
+            <footer id="mainFooter">
+                <div class="footer-content">
+                    <p>Site desenvolvido por Júlia Martins Souza para o Projeto de Ensino Coltrekking do Colégio Técnico
+                        da
+                        UFMG</p>
+                    <h3><img src="images/logoColtec.png" id="imgColtec" alt="Logo Coltec"> &copy; 2025 Coltrekking.
+                        Todos os
+                        direitos reservados.</h3>
+                    <div class="footer-links">
+                        <a href="https://www.coltec.ufmg.br" target="_blank">Institucional</a>
+                        <a href="https://www.linkedin.com/in/j%C3%BAlia-martins-souza-997ba6350/"
+                            target="_blank">Contato</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
 
-    <!-- Scripts -->
-    <script src="js/firebase.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/utilis.js"></script>
-    <script src="js/tabs.js"></script>
-    <script src="js/eventUser.js"></script>
-    <script src="js/date.js"></script>
-    <script src="js/photosUser.js"></script>
-    <script src="js/listaNegraUser.js"></script>
+        <!-- Recursos do Firebase -->
+        <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-database.js"></script>
 
-    <!--
+        <!-- Scripts -->
+        <script src="js/firebase.js"></script>
+        <script src="js/auth.js"></script>
+        <script src="js/utilis.js"></script>
+        <script src="js/tabs.js"></script>
+        <script src="js/eventUser.js"></script>
+        <script src="js/date.js"></script>
+        <script src="js/photosUser.js"></script>
+
+        <!--
     <script>
         checkAuth(); //verifica se o usuario está logado com a conta institucional
     </script> 

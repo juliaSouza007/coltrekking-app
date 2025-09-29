@@ -126,6 +126,7 @@ function deleteAccount() {
 // Função que alterna a exibição da div de gerenciamento
 function toggleUserManager() {
     const div = document.getElementById("userManager");
+    const btn = document.querySelector("button[onclick='toggleUserManager()']"); // botão
     const user = firebase.auth().currentUser;
 
     if (!user) {
@@ -147,11 +148,13 @@ function toggleUserManager() {
                 }
 
                 // Alterna a visibilidade da div
-                if (div.style.display === "none") {
+                if (div.style.display === "none" || div.style.display === "") {
                     div.style.display = "block";
+                    if (btn) btn.textContent = "Fechar"; // muda o texto
                     loadUsers(); // carrega a lista de usuários
                 } else {
                     div.style.display = "none";
+                    if (btn) btn.textContent = "Gerenciar Usuários"; // volta ao original
                 }
             })
             .catch(err => console.error("Erro ao verificar role:", err));

@@ -11,22 +11,20 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" class="center">
         <!-- Logo -->
         <div class="center">
             <img src="images/coltrekkingVertical.png" id="imgLogin" alt="Logo Coltrekking">
         </div>
 
         <!-- Conteúdo para Usuários não Logados -->
-        <div id="auth" class="center">
-             <!-- Alternar para AUTENTICAÇÃO DO GOOGLE-->
-             <h3>
-                <br> Acesse com sua conta Google: <br>
-                <img src="images/logoGoogle.png" id="logoGoogle" alt="Logo Google" onclick="signInWithGoogle()">
-             </h3>
-        </div>
+        <!-- Alternar para AUTENTICAÇÃO DO GOOGLE-->
+        <h3>
+            <br> Acesse com sua conta Google: <br>
+            <img src="images/logoGoogle.png" id="logoGoogle" alt="Logo Google" onclick="signInWithGoogle()">
+        </h3>
     </div>
-    
+
     <!-- Recursos do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.8.1/firebase-auth.js"></script>
@@ -37,4 +35,5 @@
     <script src="js/utilis.js"></script>
     <script src="js/auth.js"></script>
 </body>
+
 </html>
