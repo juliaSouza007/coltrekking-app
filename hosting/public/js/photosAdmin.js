@@ -21,19 +21,34 @@ function fillPhotoList() {
     photoContainer.innerHTML = '';
 
     firebase.database().ref('event').once('value').then(eventsSnapshot => {
+        const eventsArray = [];
+
+        // transforma em array
         eventsSnapshot.forEach(eventSnap => {
-            const eventKey = eventSnap.key;
-            const eventData = eventSnap.val();
+            eventsArray.push({ key: eventSnap.key, value: eventSnap.val() });
+        });
+
+        // ordena igual ao fillEventList (mais recente em cima)
+        eventsArray.sort((a, b) => {
+            const tA = a.value.dataInscricao ? new Date(a.value.dataInscricao).getTime() : 0;
+            const tB = b.value.dataInscricao ? new Date(b.value.dataInscricao).getTime() : 0;
+            return tB - tA;
+        });
+
+        // agora monta os cards já na ordem
+        eventsArray.forEach(eventItem => {
+            const eventKey = eventItem.key;
+            const eventData = eventItem.value;
 
             firebase.database().ref('photos/' + eventKey).once('value').then(photoSnap => {
                 const links = photoSnap.val() || [];
                 const photoCard = document.createElement('div');
                 photoCard.className = 'photo-card';
 
-                // transforma a data em formato DD.MM.YYYY
-                const dataFormatada = new Date(eventData.data)
-                    .toLocaleDateString('pt-BR')
-                    .replace(/\//g, '.'); // troca / por .
+                // transforma a data em DD.MM.YYYY
+                const dataFormatada = eventData.data
+                    ? new Date(eventData.data).toLocaleDateString('pt-BR').replace(/\//g, '.')
+                    : '---';
 
                 let linksHTML = '---';
                 if (links.length > 0) {
@@ -57,7 +72,6 @@ function fillPhotoList() {
         });
     });
 }
-
 
 // exibir o formulário de admin
 document.getElementById('createPhoto').onclick = function () {

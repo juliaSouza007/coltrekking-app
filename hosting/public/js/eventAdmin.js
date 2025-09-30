@@ -26,6 +26,12 @@ eventForm.onsubmit = function (event) {
     //var percursoAltimetria = document.getElementById('percursoAltimetria').files[0] ? document.getElementById('percursoAltimetria').files[0].name : '';
 
     if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localEncontro && descricao) {
+        if (!validarOrdemDatas(dataInscricao, dataPrelecao, data)) {
+            hideItem(loading);
+            showItem(eventForm);
+            return;
+        }
+
         var newEventRef = dbRefEvents.push();
         newEventRef.set({
             nome: nome,
@@ -228,6 +234,10 @@ editEventForm.onclick = function (event) {
     var descricao = document.getElementById('descricao').value.trim();
 
     if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localEncontro && descricao) {
+        if (!validarOrdemDatas(dataInscricao, dataPrelecao, data)) {
+            return;
+        }
+
         var dataToUpdate = {
             nome,
             distancia,
@@ -346,3 +356,13 @@ function fillEventList(dataSnapshot) {
         hideItem(loading);
     });
 }
+
+// botão cancelar (funciona tanto para criação quanto edição)
+document.getElementById('cancelEventForm').onclick = function () {
+    if (confirm("Tem certeza que deseja cancelar? As alterações não serão salvas.")) {
+        eventForm.reset();
+        hideItem(eventForm);
+        showItem(submitEventForm); // volta o botão de criar
+        hideItem(editEventForm);   // esconde o botão de editar
+    }
+};

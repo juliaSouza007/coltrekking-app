@@ -64,17 +64,36 @@ function fillEventList(dataSnapshot) {
 
                 // pega a hora do evento
                 const eventStart = value.dataInscricao ? new Date(value.dataInscricao) : null;
+                const eventDate = value.data ? new Date(value.data) : null;
 
-                // verifica se já é hora de inscrição
+                // verifica se já é hora de inscrição e se ainda não passou a data do evento
                 function checkSubscriptionTime() {
                     if (!eventStart) return;
 
-                    if (Date.now() >= eventStart.getTime()) {
-                        subscribeBtn.disabled = false;
-                        subscribeBtn.style.backgroundColor = ''; // cor normal
-                        subscribeBtn.style.cursor = 'pointer';
-                        clearInterval(subscriptionTimer); // para de checar
+                    const now = Date.now();
+
+                    // se ainda não chegou a hora de inscrição
+                    if (now < eventStart.getTime()) {
+                        subscribeBtn.disabled = true;
+                        subscribeBtn.style.backgroundColor = '#ccc';
+                        subscribeBtn.style.cursor = 'not-allowed';
+                        return;
                     }
+
+                    // se a data do evento já passou
+                    if (eventDate && now > eventDate.getTime()) {
+                        subscribeBtn.disabled = true;
+                        subscribeBtn.style.backgroundColor = '#008000';
+                        subscribeBtn.style.cursor = 'not-allowed';
+                        subscribeBtn.textContent = 'Evento realizado';
+                        clearInterval(subscriptionTimer);
+                        return;
+                    }
+
+                    // se está no período válido de inscrição
+                    subscribeBtn.disabled = false;
+                    subscribeBtn.style.backgroundColor = '';
+                    subscribeBtn.style.cursor = 'pointer';
                 }
 
                 // chama a função a cada segundo até habilitar
@@ -93,6 +112,15 @@ function fillEventList(dataSnapshot) {
                         if (snapshot.exists()) {
                             subscribeBtn.style.display = 'none';
                             unsubscribeBtn.style.display = 'inline-block';
+
+                            // checa se a data do evento já passou
+                            const eventDate = value.data ? new Date(value.data) : null;
+                            if (eventDate && Date.now() > eventDate.getTime()) {
+                                unsubscribeBtn.disabled = true;
+                                unsubscribeBtn.style.backgroundColor = '#008000';
+                                unsubscribeBtn.style.cursor = 'not-allowed';
+                                unsubscribeBtn.textContent = 'Evento realizado';
+                            }
                         }
                     });
 
