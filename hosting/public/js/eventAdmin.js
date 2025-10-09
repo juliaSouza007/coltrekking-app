@@ -184,10 +184,11 @@ function listarInscricoes(eventId, nomeEvento = 'Evento', dataInicioEvento = nul
             }
 
             const csvRows = [];
-            csvRows.push(["Nome", "Email", "Turma", "Curso", "CPF", "Data de Inscrição"]);
+            csvRows.push(["", "Nome", "Email", "Turma", "Curso", "CPF", "Data de Inscrição"]);
 
-            inscricoes.forEach(i => {
+            inscricoes.forEach((i, index) => {
                 csvRows.push([
+                    index + 1, // número da linha
                     `"${i.nome.replace(/"/g, '""')}"`,
                     `"${i.email.replace(/"/g, '""')}"`,
                     `"${i.turma}"`,
