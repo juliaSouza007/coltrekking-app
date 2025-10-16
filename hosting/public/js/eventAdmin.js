@@ -121,7 +121,7 @@ function updateEvent(key) {
 }
 
 // botão para listar inscrições de um evento e exportar CSV
-function listarInscricoes(eventId, nomeEvento = 'Evento', dataInicioEvento = null) {
+function exportarInscricoesCSV(eventId, nomeEvento = 'Evento', dataInicioEvento = null) {
     const inscricoesRef = firebase.database().ref('inscricoes/' + eventId);
 
     inscricoesRef.once('value')
@@ -212,6 +212,106 @@ function listarInscricoes(eventId, nomeEvento = 'Evento', dataInicioEvento = nul
             console.error('Erro ao buscar inscrições:', error);
             alert('Erro ao buscar inscrições.');
         });
+}
+
+// botão para listar inscritos e registrar presença (FATOR K)
+function listarInscritos(eventId) {
+    const inscritosContainer = document.getElementById("inscritosContainer");
+    const inscritosList = document.getElementById("inscritosList");
+
+    // Exibe o container e mostra o carregamento
+    inscritosContainer.classList.remove("startHidden");
+    inscritosList.innerHTML = "<p>Carregando inscritos...</p>";
+
+    const inscricoesRef = firebase.database().ref("inscricoes/" + eventId);
+
+    inscricoesRef.once("value")
+        .then(snapshot => {
+            if (!snapshot.exists()) {
+                inscritosList.innerHTML = "<p>Nenhum inscrito encontrado neste evento.</p>";
+                return;
+            }
+
+            const inscricoes = [];
+            const promises = [];
+
+            snapshot.forEach(childSnap => {
+                const uid = childSnap.key;
+                const inscricaoData = childSnap.val() || {};
+                inscricoes.push({ uid, dataInscricao: inscricaoData.dataInscricao || 0 });
+            });
+
+            // Ordena por data de inscrição (mais antiga primeiro)
+            inscricoes.sort((a, b) => (a.dataInscricao || 0) - (b.dataInscricao || 0));
+
+            inscritosList.innerHTML = ""; // limpa lista
+
+            // Para cada inscrito, busca os dados do usuário
+            inscricoes.forEach(({ uid }) => {
+                const userRef = firebase.database().ref("users/" + uid);
+                const p = userRef.once("value").then(userSnap => {
+                    const user = userSnap.val() || {};
+                    const nome = user.nome || "Sem nome";
+
+                    // Cria o card do inscrito
+                    const userCard = document.createElement("div");
+                    userCard.className = "user-card";
+
+                    const nameElem = document.createElement("span");
+                    nameElem.textContent = nome;
+                    userCard.appendChild(nameElem);
+
+                    // Botão de presença
+                    const presenceBtn = document.createElement("button");
+                    presenceBtn.textContent = "Ausente";
+                    presenceBtn.className = "danger";
+
+                    // Se já houver registro de presença no BD, aplica o estado
+                    firebase.database().ref(`inscricoes/${eventId}/${uid}/presenca`)
+                        .once("value")
+                        .then(presSnap => {
+                            if (presSnap.exists() && presSnap.val() === true) {
+                                presenceBtn.textContent = "Presente";
+                                presenceBtn.className = "primary";
+                            }
+                        });
+
+                    presenceBtn.addEventListener("click", () => {
+                        const isPresent = presenceBtn.textContent === "Presente";
+                        const novoStatus = !isPresent;
+
+                        // Atualiza texto e estilo do botão
+                        presenceBtn.textContent = novoStatus ? "Presente" : "Ausente";
+                        presenceBtn.className = novoStatus ? "primary" : "danger";
+
+                        // Atualiza no banco
+                        firebase.database().ref(`inscricoes/${eventId}/${uid}`).update({
+                            presenca: novoStatus
+                        });
+                    });
+
+                    userCard.appendChild(presenceBtn);
+                    inscritosList.appendChild(userCard);
+                });
+
+                promises.push(p);
+            });
+
+            return Promise.all(promises);
+        })
+        .catch(err => {
+            console.error("Erro ao carregar inscritos:", err);
+            inscritosList.innerHTML = "<p>Erro ao carregar inscritos.</p>";
+        });
+}
+
+// botão de fechar lista
+const fecharInscritosBtn = document.getElementById("fecharInscritos");
+if (fecharInscritosBtn) {
+    fecharInscritosBtn.addEventListener("click", () => {
+        const container = document.getElementById("inscritosContainer");
+        if (container) container.classList.add("startHidden");
+    });
 }
 
 //trata a submissão do formulário de edição de eventos
@@ -338,14 +438,20 @@ function fillEventList(dataSnapshot) {
                 editBtn.className = 'alternative eventBtn';
                 editBtn.onclick = () => updateEvent(item.key);
 
-                const listarInscricoesBtn = document.createElement('button');
-                listarInscricoesBtn.textContent = 'Baixar Planilha de Inscrições';
-                listarInscricoesBtn.className = 'eventBtn';
-                listarInscricoesBtn.onclick = () => listarInscricoes(item.key, value.nome);
+                const exportarCSV = document.createElement('button');
+                exportarCSV.textContent = 'Baixar Planilha de Inscrições';
+                exportarCSV.className = 'alternative eventBtn';
+                exportarCSV.onclick = () => exportarInscricoesCSV(item.key, value.nome);
+
+                const listarBtn = document.createElement('button');
+                listarBtn.textContent = 'Listar Inscritos';
+                listarBtn.className = 'alternative eventBtn';
+                listarBtn.onclick = () => listarInscritos(item.key);
 
                 eventCard.appendChild(removeBtn);
                 eventCard.appendChild(editBtn);
-                eventCard.appendChild(listarInscricoesBtn);
+                eventCard.appendChild(exportarCSV);
+                eventCard.appendChild(listarBtn);
             }
 
             eventContainer.appendChild(eventCard);
