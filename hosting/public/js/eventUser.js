@@ -178,9 +178,25 @@ function subscribeToEvent(eventId, subscribeBtn, unsubscribeBtn) {
                 throw new Error("Usuário bloqueado");
             }
 
+            // Verifica se o evento é de nível médio
+            const eventoSnap = firebase.database().ref("eventos/" + eventId).once("value");
+            const evento = eventoSnap.val();
+
+            if (evento && evento.dificuldade === "Médio (acampas)") {
+                const pontos = parseFloat(userData.pontos) || 0;
+                if (pontos < 50) {
+                    alert("⚠️ Você precisa de pelo menos 50 pontos para participar deste evento.");
+                    throw new Error("Pontuação insuficiente");
+                }
+            }
+
             const dataInscricao = Date.now();
             const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
-            return inscricaoRef.set({ dataInscricao });
+
+            return inscricaoRef.set({
+                dataInscricao: dataInscricao,
+                presenca: false
+            });
         })
         .then(() => {
             alert('Inscrição realizada com sucesso!');

@@ -22,11 +22,12 @@ firebase.auth().onAuthStateChanged(function(user) {
                     nome: user.displayName || '',
                     email: user.email,
                     role: "user",
-                    able: true
+                    able: true,
+                    pontos: 0 // <-- novo campo de pontuação inicial
                 };
                 return userRef.set(userData).then(() => {
                     console.log('Usuário criado com sucesso!');
-                    return userData; // retorna os dados para usar adiante
+                    return userData;
                 });
             } else {
                 const data = snapshot.val();
@@ -44,6 +45,12 @@ firebase.auth().onAuthStateChanged(function(user) {
                     data.able = true;
                 }
 
+                // Se não tiver o campo pontos, inicia com 0
+                if (data.pontos === undefined) {
+                    updates.pontos = 0;
+                    data.pontos = 0;
+                }
+
                 if (Object.keys(updates).length > 0) {
                     return userRef.update(updates).then(() => {
                         console.log('Dados de usuário atualizados:', updates);
@@ -51,13 +58,19 @@ firebase.auth().onAuthStateChanged(function(user) {
                     });
                 }
 
-                return data; // já estava completo
+                return data;
             }
         }).then(userData => {
-            // Aqui o usuário sempre tem role e able definidos
+            // Salva UID no localStorage
             localStorage.setItem('uid', user.uid);
 
-            // Pode usar role/able sem erro
+            // 🔢 Atualiza a pontuação na tela (se houver elemento)
+            const pontosEl = document.getElementById('userPoints');
+            if (pontosEl) {
+                pontosEl.innerHTML = `Pontuação: ${userData.pontos || 0}`;
+            }
+
+            // Exibe o conteúdo normal
             showUserContent(user, userData.role, userData.able);
         }).catch(error => {
             console.error("Erro ao ler/criar usuário:", error);

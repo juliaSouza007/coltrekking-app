@@ -92,6 +92,8 @@ function removeEvent(key) {
 function updateEvent(key) {
     const eventRef = firebase.database().ref('event/' + key);
 
+    eventForm.scrollIntoView({ behavior: "smooth", block: "start" });
+
     eventRef.once('value').then(snapshot => {
         const value = snapshot.val();
         if (!value) {
@@ -214,87 +216,134 @@ function exportarInscricoesCSV(eventId, nomeEvento = 'Evento', dataInicioEvento 
         });
 }
 
+// função para atualizar pontos usando fator K
+async function atualizarPontuacaoUsuario(uid, eventId) {
+    const eventoSnap = await firebase.database().ref("eventos/" + eventId).once("value");
+    const evento = eventoSnap.val();
+    if (!evento) return;
+
+    const km = parseFloat(evento.distancia) || 0;
+    const subida = parseFloat(evento.subida) || 0;
+    const descida = parseFloat(evento.descida) || 0;
+
+    const fatorK = 1 + ((subida + descida) / 1000);
+    const pontosEvento = km * fatorK;
+
+    const userRef = firebase.database().ref("users/" + uid);
+    const userSnap = await userRef.once("value");
+    const userData = userSnap.val() || {};
+
+    const pontosAtuais = parseFloat(userData.pontos) || 0;
+    const novosPontos = pontosAtuais + pontosEvento;
+
+    await userRef.update({ pontos: novosPontos });
+    console.log(`Pontuação atualizada: +${pontosEvento.toFixed(2)} pontos para ${uid}`);
+}
+
 // botão para listar inscritos e registrar presença (FATOR K)
 function listarInscritos(eventId) {
     const inscritosContainer = document.getElementById("inscritosContainer");
     const inscritosList = document.getElementById("inscritosList");
 
-    // Exibe o container e mostra o carregamento
+    if (!inscritosContainer || !inscritosList) {
+        console.error("Container de inscritos não encontrado no HTML!");
+        return;
+    }
+
     inscritosContainer.classList.remove("startHidden");
     inscritosList.innerHTML = "<p>Carregando inscritos...</p>";
+
+    inscritosContainer.scrollIntoView({ behavior: "smooth", block: "start" });
 
     const inscricoesRef = firebase.database().ref("inscricoes/" + eventId);
 
     inscricoesRef.once("value")
         .then(snapshot => {
+            inscritosList.innerHTML = "";
+
             if (!snapshot.exists()) {
                 inscritosList.innerHTML = "<p>Nenhum inscrito encontrado neste evento.</p>";
                 return;
             }
 
             const inscricoes = [];
-            const promises = [];
-
             snapshot.forEach(childSnap => {
-                const uid = childSnap.key;
-                const inscricaoData = childSnap.val() || {};
-                inscricoes.push({ uid, dataInscricao: inscricaoData.dataInscricao || 0 });
+                inscricoes.push({
+                    uid: childSnap.key,
+                    dataInscricao: childSnap.val().dataInscricao || 0,
+                    presenca: childSnap.val().presenca || false
+                });
             });
 
-            // Ordena por data de inscrição (mais antiga primeiro)
-            inscricoes.sort((a, b) => (a.dataInscricao || 0) - (b.dataInscricao || 0));
+            // Ordena por hora da inscrição (mais antiga primeiro)
+            inscricoes.sort((a, b) => a.dataInscricao - b.dataInscricao);
 
-            inscritosList.innerHTML = ""; // limpa lista
+            // Mostra o total de inscritos
+            const totalElem = document.createElement("p");
+            totalElem.textContent = `Total de inscritos: ${inscricoes.length}`;
+            totalElem.className = "total-inscritos";
+            inscritosList.appendChild(totalElem);
 
-            // Para cada inscrito, busca os dados do usuário
-            inscricoes.forEach(({ uid }) => {
-                const userRef = firebase.database().ref("users/" + uid);
-                const p = userRef.once("value").then(userSnap => {
+            const promises = inscricoes.map((inscricao, index) => {
+                const userRef = firebase.database().ref("users/" + inscricao.uid);
+                return userRef.once("value").then(userSnap => {
                     const user = userSnap.val() || {};
-                    const nome = user.nome || "Sem nome";
 
-                    // Cria o card do inscrito
                     const userCard = document.createElement("div");
                     userCard.className = "user-card";
 
+                    const row = document.createElement("div");
+                    row.className = "user-row";
+
+                    // Número da posição
+                    const posElem = document.createElement("span");
+                    posElem.className = "user-pos";
+                    posElem.textContent = `${index + 1}º `;
+                    row.appendChild(posElem);
+
+                    // Nome
                     const nameElem = document.createElement("span");
-                    nameElem.textContent = nome;
-                    userCard.appendChild(nameElem);
+                    nameElem.textContent = user.nome || "---";
+                    row.appendChild(nameElem);
 
-                    // Botão de presença
-                    const presenceBtn = document.createElement("button");
-                    presenceBtn.textContent = "Ausente";
-                    presenceBtn.className = "danger";
+                    // Botão de presença dinâmico
+                    const presencaBtn = document.createElement("button");
+                    presencaBtn.textContent = inscricao.presenca ? "Presente" : "Ausente";
+                    presencaBtn.className = `presenca-btn ${inscricao.presenca ? "presente" : "ausente"}`;
 
-                    // Se já houver registro de presença no BD, aplica o estado
-                    firebase.database().ref(`inscricoes/${eventId}/${uid}/presenca`)
-                        .once("value")
-                        .then(presSnap => {
-                            if (presSnap.exists() && presSnap.val() === true) {
-                                presenceBtn.textContent = "Presente";
-                                presenceBtn.className = "primary";
+                    presencaBtn.addEventListener("click", async () => {
+                        try {
+                            // Lê o valor atual direto do BD
+                            const presencaSnap = await firebase.database()
+                                .ref(`inscricoes/${eventId}/${inscricao.uid}/presenca`)
+                                .once("value");
+                            const atual = presencaSnap.val() === true;
+                            const novoStatus = !atual;
+
+                            // Atualiza pontuação se marcando presença
+                            if (novoStatus) {
+                                atualizarPontuacaoUsuario(inscricao.uid, eventId);
                             }
-                        });
 
-                    presenceBtn.addEventListener("click", () => {
-                        const isPresent = presenceBtn.textContent === "Presente";
-                        const novoStatus = !isPresent;
+                            // Atualiza visualmente
+                            presencaBtn.textContent = novoStatus ? "Presente" : "Ausente";
+                            presencaBtn.classList.toggle("presente", novoStatus);
+                            presencaBtn.classList.toggle("ausente", !novoStatus);
 
-                        // Atualiza texto e estilo do botão
-                        presenceBtn.textContent = novoStatus ? "Presente" : "Ausente";
-                        presenceBtn.className = novoStatus ? "primary" : "danger";
-
-                        // Atualiza no banco
-                        firebase.database().ref(`inscricoes/${eventId}/${uid}`).update({
-                            presenca: novoStatus
-                        });
+                            // Atualiza no BD
+                            await firebase.database()
+                                .ref(`inscricoes/${eventId}/${inscricao.uid}/presenca`)
+                                .set(novoStatus);
+                        } catch (err) {
+                            console.error("Erro ao atualizar presença:", err);
+                            alert("Erro ao atualizar presença. Tente novamente.");
+                        }
                     });
 
-                    userCard.appendChild(presenceBtn);
+                    row.appendChild(presencaBtn);
+                    userCard.appendChild(row);
                     inscritosList.appendChild(userCard);
                 });
-
-                promises.push(p);
             });
 
             return Promise.all(promises);
