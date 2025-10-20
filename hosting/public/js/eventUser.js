@@ -37,13 +37,15 @@ function fillEventList(dataSnapshot) {
 
                 eventCard.innerHTML = `
                     <h3>${value.nome}</h3>
-                    <p>Descrição: ${value.descricao || '---'}</p>
+                    <h4>${value.descricao || '---'}</h4>
                     <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
                     <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
                     <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
                     <p>Local da preleção: ${value.localEncontro || '---'}</p>
                     <p>Dificuldade: ${value.dificuldade || '---'}</p>
                     <p>Distância: ${value.distancia || '---'} km</p>
+                    <p>Subida: ${value.subida || '---'} m</p>
+                    <p>Descida: ${value.descida || '---'} m</p>
                     <p>Trajeto: ${value.trajeto || '---'}</p>
                 `;
 
@@ -164,6 +166,7 @@ function subscribeToEvent(eventId, subscribeBtn, unsubscribeBtn) {
 
     const uid = user.uid;
 
+    // Busca dados do usuário
     firebase.database().ref("users/" + uid).once("value")
         .then(snapshot => {
             const userData = snapshot.val();
@@ -178,22 +181,31 @@ function subscribeToEvent(eventId, subscribeBtn, unsubscribeBtn) {
                 throw new Error("Usuário bloqueado");
             }
 
-            // Verifica se o evento é de nível médio
-            const eventoSnap = firebase.database().ref("eventos/" + eventId).once("value");
-            const evento = eventoSnap.val();
+            // Busca dados do evento
+            return firebase.database().ref("event/" + eventId).once("value")
+                .then(eventoSnap => {
+                    const evento = eventoSnap.val();
+                    if (!evento) {
+                        alert("Evento não encontrado.");
+                        throw new Error("Evento inexistente");
+                    }
 
-            if (evento && evento.dificuldade === "Médio (acampas)") {
-                const pontos = parseFloat(userData.pontos) || 0;
-                if (pontos < 50) {
-                    alert("⚠️ Você precisa de pelo menos 50 pontos para participar deste evento.");
-                    throw new Error("Pontuação insuficiente");
-                }
-            }
+                    // Verifica pontuação mínima para eventos médios
+                    if (evento.dificuldade === "Médio (acampas)") {
+                        const pontos = parseFloat(userData.pontos) || 0;
+                        if (pontos < 50) {
+                            alert("⚠️ Você precisa de pelo menos 50 pontos para participar deste evento.");
+                            throw new Error("Pontuação insuficiente");
+                        }
+                    }
 
+                    return { evento, userData };
+                });
+        })
+        .then(() => {
+            // Registra inscrição
             const dataInscricao = Date.now();
-            const inscricaoRef = firebase.database().ref(`inscricoes/${eventId}/${uid}`);
-
-            return inscricaoRef.set({
+            return firebase.database().ref(`inscricoes/${eventId}/${uid}`).set({
                 dataInscricao: dataInscricao,
                 presenca: false
             });
@@ -204,7 +216,7 @@ function subscribeToEvent(eventId, subscribeBtn, unsubscribeBtn) {
             unsubscribeBtn.style.display = 'inline-block';
         })
         .catch(error => {
-            if (!["Dados pessoais incompletos", "Usuário bloqueado", "Inscrição antes do horário"].includes(error.message)) {
+            if (!["Dados pessoais incompletos", "Usuário bloqueado", "Inscrição antes do horário", "Pontuação insuficiente"].includes(error.message)) {
                 console.error('Erro ao inscrever:', error);
                 alert('Erro ao realizar inscrição. Tente novamente.');
             }

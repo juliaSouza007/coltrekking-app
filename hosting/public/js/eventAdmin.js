@@ -16,6 +16,8 @@ eventForm.onsubmit = function (event) {
 
     var nome = document.getElementById('nome').value;
     var distancia = document.getElementById('distancia').value;
+    var subida = parseFloat(document.getElementById('subida').value) || 0;
+    var descida = parseFloat(document.getElementById('descida').value) || 0;
     var trajeto = document.getElementById('trajeto').value;
     var dificuldade = document.getElementById('dificuldade').value;
     var data = document.getElementById('data').value;
@@ -36,6 +38,8 @@ eventForm.onsubmit = function (event) {
         newEventRef.set({
             nome: nome,
             distancia: distancia,
+            subida: subida,
+            descida: descida,
             trajeto: trajeto,
             dificuldade: dificuldade,
             data: data,
@@ -110,6 +114,8 @@ function updateEvent(key) {
         document.getElementById('localEncontro').value = value.localEncontro || '';
         document.getElementById('dificuldade').value = value.dificuldade || '';
         document.getElementById('distancia').value = value.distancia || '';
+        document.getElementById('subida').value = value.subida || '';
+        document.getElementById('descida').value = value.descida || '';
         document.getElementById('trajeto').value = value.trajeto || '';
 
         // Guarda a key para usar depois na atualização
@@ -121,6 +127,62 @@ function updateEvent(key) {
         showItem(editEventForm);
     });
 }
+
+//trata a submissão do formulário de edição de eventos
+editEventForm.onclick = function (event) {
+    event.preventDefault();
+    var key = eventForm.dataset.editingKey;
+    if (!key) {
+        alert('Erro: nenhum evento em edição.');
+        return;
+    }
+
+    // Pegando todos os valores do formulário
+    var nome = document.getElementById('nome').value.trim();
+    var distancia = document.getElementById('distancia').value.trim();
+    var subida = document.getElementById('subida').value.trim();
+    var descida = document.getElementById('descida').value.trim();
+    var trajeto = document.getElementById('trajeto').value.trim();
+    var dificuldade = document.getElementById('dificuldade').value.trim();
+    var data = document.getElementById('data').value.trim();
+    var dataInscricao = document.getElementById('dataInscricao').value.trim();
+    var dataPrelecao = document.getElementById('dataPrelecao').value.trim();
+    var localEncontro = document.getElementById('localEncontro').value.trim();
+    var descricao = document.getElementById('descricao').value.trim();
+
+    if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localEncontro && descricao) {
+        if (!validarOrdemDatas(dataInscricao, dataPrelecao, data)) {
+            return;
+        }
+
+        var dataToUpdate = {
+            nome,
+            distancia,
+            subida,
+            descida,
+            trajeto,
+            dificuldade,
+            data,
+            dataInscricao,
+            dataPrelecao,
+            localEncontro,
+            descricao
+        };
+
+        dbRefEvents.child(key).update(dataToUpdate).then(() => {
+            alert('Evento atualizado com sucesso!');
+            eventForm.reset();
+            hideItem(eventForm);
+            showItem(submitEventForm);   // mostra de novo o botão de criar
+            hideItem(editEventForm);     // esconde o botão de editar
+            dbRefEvents.once('value').then(fillEventList);
+        }).catch((error) => {
+            showError('Erro ao atualizar evento:', error);
+        });
+    } else {
+        alert('Por favor, preencha todos os campos para atualizar o evento.');
+    }
+};
 
 // botão para listar inscrições de um evento e exportar CSV
 function exportarInscricoesCSV(eventId, nomeEvento = 'Evento', dataInicioEvento = null) {
@@ -217,27 +279,44 @@ function exportarInscricoesCSV(eventId, nomeEvento = 'Evento', dataInicioEvento 
 }
 
 // função para atualizar pontos usando fator K
-async function atualizarPontuacaoUsuario(uid, eventId) {
-    const eventoSnap = await firebase.database().ref("eventos/" + eventId).once("value");
-    const evento = eventoSnap.val();
-    if (!evento) return;
+async function atualizarPontuacaoUsuario(uid, eventId, adicionar) {
+    try {
+        const eventSnap = await firebase.database().ref("event/" + eventId).once("value");
+        const evento = eventSnap.val();
 
-    const km = parseFloat(evento.distancia) || 0;
-    const subida = parseFloat(evento.subida) || 0;
-    const descida = parseFloat(evento.descida) || 0;
+        if (!evento) {
+            console.error("Evento não encontrado:", eventId);
+            return;
+        }
 
-    const fatorK = 1 + ((subida + descida) / 1000);
-    const pontosEvento = km * fatorK;
+        const distancia = parseFloat(evento.distancia) || 0;
+        const subida = parseFloat(evento.subida) || 0;
+        const descida = parseFloat(evento.descida) || 0;
 
-    const userRef = firebase.database().ref("users/" + uid);
-    const userSnap = await userRef.once("value");
-    const userData = userSnap.val() || {};
+        // Fator K
+        const fatorK = 1 + ((subida + descida) / 1000);
+        const pontuacaoEvento = Math.round(distancia * fatorK);
 
-    const pontosAtuais = parseFloat(userData.pontos) || 0;
-    const novosPontos = pontosAtuais + pontosEvento;
+        if (pontuacaoEvento <= 0) {
+            console.warn(`Pontuação inválida (${pontuacaoEvento}) para evento ${eventId}`);
+            return;
+        }
 
-    await userRef.update({ pontos: novosPontos });
-    console.log(`Pontuação atualizada: +${pontosEvento.toFixed(2)} pontos para ${uid}`);
+        // Busca pontos atuais do usuário
+        const userRef = firebase.database().ref("users/" + uid);
+        const userSnap = await userRef.once("value");
+        const userData = userSnap.val() || {};
+
+        const pontosAtuais = parseFloat(userData.pontos) || 0;
+        const novosPontos = adicionar
+            ? pontosAtuais + pontuacaoEvento   // soma se presente
+            : Math.max(0, pontosAtuais - pontuacaoEvento); // remove se ausente
+
+        // Atualiza no BD
+        await userRef.update({ pontos: novosPontos });
+    } catch (err) {
+        console.error("Erro ao atualizar pontuação:", err);
+    }
 }
 
 // botão para listar inscritos e registrar presença (FATOR K)
@@ -266,6 +345,25 @@ function listarInscritos(eventId) {
                 return;
             }
 
+            // Mostra pontuação do evento
+            firebase.database().ref("event/" + eventId).once("value").then(eventSnap => {
+                const evento = eventSnap.val();
+                if (!evento) return;
+
+                const distancia = parseFloat(evento.distancia) || 0;
+                const subida = parseFloat(evento.subida) || 0;
+                const descida = parseFloat(evento.descida) || 0;
+
+                const fatorK = 1 + ((subida + descida) / 1000);
+                const pontuacaoEvento = Math.round(distancia * fatorK);
+
+                const pontosElem = document.createElement("p");
+                pontosElem.innerHTML = `<strong>Pontuação do evento:</strong> ${pontuacaoEvento} pontos`;
+                pontosElem.className = "pontuacao-evento";
+                inscritosList.appendChild(pontosElem);
+            });
+
+            // Lista inscritos
             const inscricoes = [];
             snapshot.forEach(childSnap => {
                 inscricoes.push({
@@ -275,10 +373,8 @@ function listarInscritos(eventId) {
                 });
             });
 
-            // Ordena por hora da inscrição (mais antiga primeiro)
             inscricoes.sort((a, b) => a.dataInscricao - b.dataInscricao);
 
-            // Mostra o total de inscritos
             const totalElem = document.createElement("p");
             totalElem.textContent = `Total de inscritos: ${inscricoes.length}`;
             totalElem.className = "total-inscritos";
@@ -295,45 +391,36 @@ function listarInscritos(eventId) {
                     const row = document.createElement("div");
                     row.className = "user-row";
 
-                    // Número da posição
                     const posElem = document.createElement("span");
                     posElem.className = "user-pos";
                     posElem.textContent = `${index + 1}º `;
                     row.appendChild(posElem);
 
-                    // Nome
                     const nameElem = document.createElement("span");
                     nameElem.textContent = user.nome || "---";
                     row.appendChild(nameElem);
 
-                    // Botão de presença dinâmico
                     const presencaBtn = document.createElement("button");
                     presencaBtn.textContent = inscricao.presenca ? "Presente" : "Ausente";
                     presencaBtn.className = `presenca-btn ${inscricao.presenca ? "presente" : "ausente"}`;
 
                     presencaBtn.addEventListener("click", async () => {
                         try {
-                            // Lê o valor atual direto do BD
-                            const presencaSnap = await firebase.database()
-                                .ref(`inscricoes/${eventId}/${inscricao.uid}/presenca`)
-                                .once("value");
+                            const presencaRef = firebase.database().ref(`inscricoes/${eventId}/${inscricao.uid}/presenca`);
+                            const presencaSnap = await presencaRef.once("value");
                             const atual = presencaSnap.val() === true;
                             const novoStatus = !atual;
 
-                            // Atualiza pontuação se marcando presença
-                            if (novoStatus) {
-                                atualizarPontuacaoUsuario(inscricao.uid, eventId);
-                            }
+                            // Atualiza pontos (soma se novoStatus = true, subtrai se false)
+                            await atualizarPontuacaoUsuario(inscricao.uid, eventId, novoStatus);
 
-                            // Atualiza visualmente
+                            // Atualiza presença no BD
+                            await presencaRef.set(novoStatus);
+
+                            // Atualiza botão visualmente
                             presencaBtn.textContent = novoStatus ? "Presente" : "Ausente";
                             presencaBtn.classList.toggle("presente", novoStatus);
                             presencaBtn.classList.toggle("ausente", !novoStatus);
-
-                            // Atualiza no BD
-                            await firebase.database()
-                                .ref(`inscricoes/${eventId}/${inscricao.uid}/presenca`)
-                                .set(novoStatus);
                         } catch (err) {
                             console.error("Erro ao atualizar presença:", err);
                             alert("Erro ao atualizar presença. Tente novamente.");
@@ -354,6 +441,7 @@ function listarInscritos(eventId) {
         });
 }
 
+
 // botão de fechar lista
 const fecharInscritosBtn = document.getElementById("fecharInscritos");
 if (fecharInscritosBtn) {
@@ -362,58 +450,6 @@ if (fecharInscritosBtn) {
         if (container) container.classList.add("startHidden");
     });
 }
-
-//trata a submissão do formulário de edição de eventos
-editEventForm.onclick = function (event) {
-    event.preventDefault();
-    var key = eventForm.dataset.editingKey;
-    if (!key) {
-        alert('Erro: nenhum evento em edição.');
-        return;
-    }
-
-    // Pegando todos os valores do formulário
-    var nome = document.getElementById('nome').value.trim();
-    var distancia = document.getElementById('distancia').value.trim();
-    var trajeto = document.getElementById('trajeto').value.trim();
-    var dificuldade = document.getElementById('dificuldade').value.trim();
-    var data = document.getElementById('data').value.trim();
-    var dataInscricao = document.getElementById('dataInscricao').value.trim();
-    var dataPrelecao = document.getElementById('dataPrelecao').value.trim();
-    var localEncontro = document.getElementById('localEncontro').value.trim();
-    var descricao = document.getElementById('descricao').value.trim();
-
-    if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localEncontro && descricao) {
-        if (!validarOrdemDatas(dataInscricao, dataPrelecao, data)) {
-            return;
-        }
-
-        var dataToUpdate = {
-            nome,
-            distancia,
-            trajeto,
-            dificuldade,
-            data,
-            dataInscricao,
-            dataPrelecao,
-            localEncontro,
-            descricao
-        };
-
-        dbRefEvents.child(key).update(dataToUpdate).then(() => {
-            alert('Evento atualizado com sucesso!');
-            eventForm.reset();
-            hideItem(eventForm);
-            showItem(submitEventForm);   // mostra de novo o botão de criar
-            hideItem(editEventForm);     // esconde o botão de editar
-            dbRefEvents.once('value').then(fillEventList);
-        }).catch((error) => {
-            showError('Erro ao atualizar evento:', error);
-        });
-    } else {
-        alert('Por favor, preencha todos os campos para atualizar o evento.');
-    }
-};
 
 // função para preencher a lista de eventos na página
 function fillEventList(dataSnapshot) {
@@ -458,13 +494,15 @@ function fillEventList(dataSnapshot) {
 
             eventCard.innerHTML = `
                 <h3>${value.nome}</h3>
-                <p>Descrição: ${value.descricao || '---'}</p>
+                <h4>${value.descricao || '---'}</h4>
                 <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
                 <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
                 <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
                 <p>Local da preleção: ${value.localEncontro || '---'}</p>
                 <p>Dificuldade: ${value.dificuldade || '---'}</p>
                 <p>Distância: ${value.distancia || '---'} km</p>
+                <p>Subida: ${value.subida || '---'} m</p>
+                <p>Descida: ${value.descida || '---'} m</p>
                 <p>Trajeto: ${value.trajeto || '---'}</p>
             `;
 
@@ -487,20 +525,20 @@ function fillEventList(dataSnapshot) {
                 editBtn.className = 'alternative eventBtn';
                 editBtn.onclick = () => updateEvent(item.key);
 
-                const exportarCSV = document.createElement('button');
-                exportarCSV.textContent = 'Baixar Planilha de Inscrições';
-                exportarCSV.className = 'alternative eventBtn';
-                exportarCSV.onclick = () => exportarInscricoesCSV(item.key, value.nome);
-
                 const listarBtn = document.createElement('button');
                 listarBtn.textContent = 'Listar Inscritos';
                 listarBtn.className = 'alternative eventBtn';
                 listarBtn.onclick = () => listarInscritos(item.key);
 
+                const exportarCSV = document.createElement('button');
+                exportarCSV.textContent = 'Baixar Planilha de Inscrições';
+                exportarCSV.className = 'alternative eventBtn';
+                exportarCSV.onclick = () => exportarInscricoesCSV(item.key, value.nome);
+
                 eventCard.appendChild(removeBtn);
                 eventCard.appendChild(editBtn);
-                eventCard.appendChild(exportarCSV);
                 eventCard.appendChild(listarBtn);
+                eventCard.appendChild(exportarCSV);
             }
 
             eventContainer.appendChild(eventCard);
