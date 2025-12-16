@@ -39,9 +39,10 @@ function fillEventList(dataSnapshot) {
                     <h3>${value.nome}</h3>
                     <h4>${value.descricao || '---'}</h4>
                     <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
+                    <p>Ponto de Encontro: ${value.localEncontro || '---'}</p>
                     <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
                     <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
-                    <p>Local da preleção: ${value.localEncontro || '---'}</p>
+                    <p>Local da preleção: ${value.localPrelecao || '---'}</p>
                     <p>Dificuldade: ${value.dificuldade || '---'}</p>
                     <p>Distância: ${value.distancia || '---'} km</p>
                     <p>Subida: ${value.subida || '---'} m</p>

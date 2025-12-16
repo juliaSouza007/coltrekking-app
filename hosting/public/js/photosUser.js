@@ -1,32 +1,59 @@
-// referencias do banco
 const dbRefPhotos = firebase.database().ref('photos');
+
+// Elementos HTML
 const photoContainer = document.getElementById('photoContainer');
 
-// preencher lista de fotos (todos veem)
+// Lista de fotos (todos veem)
 function fillPhotoList() {
     photoContainer.innerHTML = '';
 
-    firebase.database().ref('event').once('value').then(eventsSnapshot => {
-        eventsSnapshot.forEach(eventSnap => {
-            const eventKey = eventSnap.key;
-            const eventData = eventSnap.val();
+    dbRefEvents.once('value').then(eventsSnapshot => {
+        const eventsArray = [];
 
-            firebase.database().ref('photos/' + eventKey).once('value').then(photoSnap => {
+        // transforma snapshot em array
+        eventsSnapshot.forEach(eventSnap => {
+            eventsArray.push({
+                key: eventSnap.key,
+                value: eventSnap.val()
+            });
+        });
+
+        // ordena por data de inscrição (mais recente primeiro)
+        eventsArray.sort((a, b) => {
+            const tA = a.value.dataInscricao
+                ? new Date(a.value.dataInscricao).getTime()
+                : 0;
+            const tB = b.value.dataInscricao
+                ? new Date(b.value.dataInscricao).getTime()
+                : 0;
+            return tB - tA;
+        });
+
+        // monta os cards
+        eventsArray.forEach(eventItem => {
+            const eventKey  = eventItem.key;
+            const eventData = eventItem.value;
+
+            dbRefPhotos.child(eventKey).once('value').then(photoSnap => {
                 const links = photoSnap.val() || [];
+
                 const photoCard = document.createElement('div');
                 photoCard.className = 'photo-card';
 
-                let linksHTML = '---';
-                if (links.length > 0) {
-                    // formata a data do evento para DD.MM.YYYY
-                    const dataFormatada = new Date(eventData.data)
+                const dataFormatada = eventData.data
+                    ? new Date(eventData.data)
                         .toLocaleDateString('pt-BR')
-                        .replace(/\//g, '.');
+                        .replace(/\//g, '.')
+                    : '---';
 
-                    linksHTML = links.map((link) => {
-                        const nomeLink = `${eventData.nome}_${dataFormatada}`;
-                        return `<a href="${link}" target="_blank">${nomeLink}</a>`;
-                    }).join(' | ');
+                let linksHTML = '---';
+
+                if (links.length > 0) {
+                    linksHTML = links.map(link => `
+                        <a href="${link}" target="_blank">
+                            ${eventData.nome}_${dataFormatada}
+                        </a>
+                    `).join('<br>');
                 }
 
                 photoCard.innerHTML = `

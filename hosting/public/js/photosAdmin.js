@@ -1,65 +1,80 @@
-// administradores do sistema
-var adminEmails = [
-    "a2023952624@teiacoltec.org",
-    "hh@teiacoltec.org"
-];
+const dbRefPhotos = firebase.database().ref('photos');
+const dbRefUsers  = firebase.database().ref('users');
 
-// referências do banco
-const dbRefPhotosAdmin = firebase.database().ref('photos');
-const dbRefEventsPhoto = firebase.database().ref('event');
-
+const photoContainer = document.getElementById('photoContainer');
 const photoAdminForm = document.getElementById('photoAdminForm');
+const createPhotoBtn = document.getElementById('createPhoto');
+const addPhotoBtn    = document.getElementById('addPhotoBtn');
 
-// verifica se o usuário é admin
+let currentUserRole = 'user';
+
 function isAdmin() {
-    const user = firebase.auth().currentUser;
-    return user && adminEmails.includes(user.email);
+    return currentUserRole === 'admin';
 }
 
-// preencher lista de fotos 
+// Lista de fotos (todos veem)
 function fillPhotoList() {
     photoContainer.innerHTML = '';
 
-    firebase.database().ref('event').once('value').then(eventsSnapshot => {
+    dbRefEvents.once('value').then(eventsSnapshot => {
         const eventsArray = [];
 
-        // transforma em array
+        // transforma snapshot em array
         eventsSnapshot.forEach(eventSnap => {
-            eventsArray.push({ key: eventSnap.key, value: eventSnap.val() });
+            eventsArray.push({
+                key: eventSnap.key,
+                value: eventSnap.val()
+            });
         });
 
-        // ordena igual ao fillEventList (mais recente em cima)
+        // ordena por data de inscrição (mais recente primeiro)
         eventsArray.sort((a, b) => {
-            const tA = a.value.dataInscricao ? new Date(a.value.dataInscricao).getTime() : 0;
-            const tB = b.value.dataInscricao ? new Date(b.value.dataInscricao).getTime() : 0;
+            const tA = a.value.dataInscricao
+                ? new Date(a.value.dataInscricao).getTime()
+                : 0;
+            const tB = b.value.dataInscricao
+                ? new Date(b.value.dataInscricao).getTime()
+                : 0;
             return tB - tA;
         });
 
-        // agora monta os cards já na ordem
+        // monta os cards
         eventsArray.forEach(eventItem => {
-            const eventKey = eventItem.key;
+            const eventKey  = eventItem.key;
             const eventData = eventItem.value;
 
-            firebase.database().ref('photos/' + eventKey).once('value').then(photoSnap => {
+            dbRefPhotos.child(eventKey).once('value').then(photoSnap => {
                 const links = photoSnap.val() || [];
                 const photoCard = document.createElement('div');
                 photoCard.className = 'photo-card';
 
-                // transforma a data em DD.MM.YYYY
                 const dataFormatada = eventData.data
-                    ? new Date(eventData.data).toLocaleDateString('pt-BR').replace(/\//g, '.')
+                    ? new Date(eventData.data)
+                        .toLocaleDateString('pt-BR')
+                        .replace(/\//g, '.')
                     : '---';
 
                 let linksHTML = '---';
+
                 if (links.length > 0) {
-                    linksHTML = links.map((link, i) => {
-                        let nomeLink = `${eventData.nome}_${dataFormatada}`;
-                        let html = `<a href="${link}" target="_blank">${nomeLink}</a><br>`;
+                    linksHTML = links.map((link, index) => {
+                        let html = `
+                            <a href="${link}" target="_blank">
+                                ${eventData.nome}_${dataFormatada}
+                            </a>
+                        `;
+
                         if (isAdmin()) {
-                            html += ` <button class="danger" onclick="removeLink('${eventKey}', ${i})">Remover</button>`;
+                            html += `
+                                <button class="danger"
+                                    onclick="removeLink('${eventKey}', ${index})">
+                                    Remover
+                                </button>
+                            `;
                         }
+
                         return html;
-                    }).join('<br>');
+                    }).join('<br><br>');
                 }
 
                 photoCard.innerHTML = `
@@ -73,19 +88,20 @@ function fillPhotoList() {
     });
 }
 
-// exibir o formulário de admin
-document.getElementById('createPhoto').onclick = function () {
+// Mostrar formulário de admin
+createPhotoBtn.onclick = function () {
     if (!isAdmin()) return;
     showItem(photoAdminForm);
-}
+};
 
-// popular select de eventos para o formulário de fotos (só admin)
+// Popular select de eventos (admin)
 function populateEventSelectForPhotos() {
     if (!isAdmin()) return;
+
     const select = document.getElementById('selectEventForPhoto');
     select.innerHTML = '';
 
-    dbRefEventsPhoto.once('value').then(snapshot => {
+    dbRefEvents.once('value').then(snapshot => {
         snapshot.forEach(eventSnap => {
             const option = document.createElement('option');
             option.value = eventSnap.key;
@@ -95,55 +111,66 @@ function populateEventSelectForPhotos() {
     });
 }
 
-// remover link (somente admin)
+// Remover link (admin)
 function removeLink(eventKey, linkIndex) {
     if (!isAdmin()) return;
     if (!confirm('Deseja remover este link?')) return;
 
-    dbRefPhotosAdmin.child(eventKey).once('value').then(snapshot => {
+    dbRefPhotos.child(eventKey).once('value').then(snapshot => {
         const links = snapshot.val() || [];
         links.splice(linkIndex, 1);
-        dbRefPhotosAdmin.child(eventKey).set(links).then(() => fillPhotoList());
+
+        dbRefPhotos.child(eventKey).set(links)
+            .then(() => fillPhotoList());
     });
 }
 
-// adicionar link (somente admin)
+// Adicionar link (admin)
 function addLink(eventKey, url) {
     if (!isAdmin()) return;
+
     if (!eventKey || !url) {
-        alert('Selecione o evento e insira o link.');
+        alert('Selecione o evento e informe o link.');
         return;
     }
 
-    dbRefPhotosAdmin.child(eventKey).once('value').then(snapshot => {
+    dbRefPhotos.child(eventKey).once('value').then(snapshot => {
         const links = snapshot.val() || [];
         links.push(url);
-        dbRefPhotosAdmin.child(eventKey).set(links).then(() => {
+
+        dbRefPhotos.child(eventKey).set(links).then(() => {
             fillPhotoList();
             document.getElementById('photoURL').value = '';
         });
     });
 }
 
-// botão adicionar link
-document.getElementById('addPhotoBtn').onclick = function(e) {
+// Botão adicionar foto
+addPhotoBtn.onclick = function (e) {
     e.preventDefault();
     if (!isAdmin()) return;
+
     const eventKey = document.getElementById('selectEventForPhoto').value;
     const url = document.getElementById('photoURL').value.trim();
-    addLink(eventKey, url);
-}
 
-// inicializa controles admin e lista de fotos
+    addLink(eventKey, url);
+};
+
+// Auth + role
 firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-        fillPhotoList(); // ✅ sempre mostra os cards ao logar
+    if (!user) return;
+
+    dbRefUsers.child(user.uid).once('value').then(snapshot => {
+        currentUserRole = snapshot.val()?.role || 'user';
+
+        fillPhotoList(); // todos veem
+
         if (isAdmin()) {
             populateEventSelectForPhotos();
-            showItem(document.getElementById('createPhoto'));
+            showItem(createPhotoBtn);
         } else {
-            hideItem(document.getElementById('createPhoto'));
+            hideItem(createPhotoBtn);
             hideItem(photoAdminForm);
         }
-    }
+    });
 });

@@ -23,11 +23,12 @@ eventForm.onsubmit = function (event) {
     var data = document.getElementById('data').value;
     var dataInscricao = document.getElementById('dataInscricao').value;
     var dataPrelecao = document.getElementById('dataPrelecao').value;
+    var localPrelecao = document.getElementById('localPrelecao').value;
     var localEncontro = document.getElementById('localEncontro').value;
     var descricao = document.getElementById('descricao').value;
     //var percursoAltimetria = document.getElementById('percursoAltimetria').files[0] ? document.getElementById('percursoAltimetria').files[0].name : '';
 
-    if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localEncontro && descricao) {
+    if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localPrelecao && localEncontro && descricao) {
         if (!validarOrdemDatas(dataInscricao, dataPrelecao, data)) {
             hideItem(loading);
             showItem(eventForm);
@@ -45,6 +46,7 @@ eventForm.onsubmit = function (event) {
             data: data,
             dataInscricao: dataInscricao,
             dataPrelecao: dataPrelecao,
+            localPrelecao: localPrelecao,
             localEncontro: localEncontro,
             descricao: descricao,
             //percursoAltimetria: percursoAltimetria
@@ -111,6 +113,7 @@ function updateEvent(key) {
         document.getElementById('data').value = value.data || ''; // já no formato correto
         document.getElementById('dataInscricao').value = value.dataInscricao || '';
         document.getElementById('dataPrelecao').value = value.dataPrelecao || '';
+        document.getElementById('localPrelecao').value = value.localPrelecao || '';
         document.getElementById('localEncontro').value = value.localEncontro || '';
         document.getElementById('dificuldade').value = value.dificuldade || '';
         document.getElementById('distancia').value = value.distancia || '';
@@ -147,10 +150,11 @@ editEventForm.onclick = function (event) {
     var data = document.getElementById('data').value.trim();
     var dataInscricao = document.getElementById('dataInscricao').value.trim();
     var dataPrelecao = document.getElementById('dataPrelecao').value.trim();
+    var localPrelecao = document.getElementById('localPrelecao').value.trim();
     var localEncontro = document.getElementById('localEncontro').value.trim();
     var descricao = document.getElementById('descricao').value.trim();
 
-    if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localEncontro && descricao) {
+    if (nome && distancia && trajeto && dificuldade && data && dataInscricao && dataPrelecao && localPrelecao && localEncontro && descricao) {
         if (!validarOrdemDatas(dataInscricao, dataPrelecao, data)) {
             return;
         }
@@ -165,6 +169,7 @@ editEventForm.onclick = function (event) {
             data,
             dataInscricao,
             dataPrelecao,
+            localPrelecao,
             localEncontro,
             descricao
         };
@@ -496,9 +501,10 @@ function fillEventList(dataSnapshot) {
                 <h3>${value.nome}</h3>
                 <h4>${value.descricao || '---'}</h4>
                 <p>Data: ${value.data ? formattedDate(value.data) : '---'}</p>
+                <p>Ponto de Encontro: ${value.localEncontro || '---'}</p>
                 <p>Data de Inscrição: ${value.dataInscricao ? formattedDate(value.dataInscricao) : '---'}</p>
                 <p>Data da Preleção: ${value.dataPrelecao ? formattedDate(value.dataPrelecao) : '---'}</p>
-                <p>Local da preleção: ${value.localEncontro || '---'}</p>
+                <p>Local da preleção: ${value.localPrelecao || '---'}</p>
                 <p>Dificuldade: ${value.dificuldade || '---'}</p>
                 <p>Distância: ${value.distancia || '---'} km</p>
                 <p>Subida: ${value.subida || '---'} m</p>

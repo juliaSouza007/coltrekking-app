@@ -179,21 +179,34 @@ function loadUsers() {
     const userList = document.getElementById("userList");
     userList.innerHTML = "<p>Carregando usuários...</p>";
 
-    const searchTerm = document.getElementById("userSearch")?.value.trim().toLowerCase() || "";
+    const searchTerm =
+        document.getElementById("userSearch")?.value.trim().toLowerCase() || "";
 
     firebase.database().ref("users").once("value")
         .then(snapshot => {
-            userList.innerHTML = ""; // limpa antes de popular
+            userList.innerHTML = "";
+
+            const users = [];
 
             snapshot.forEach(childSnap => {
                 const user = childSnap.val();
                 const uid = childSnap.key;
 
                 // Filtra pelo início do nome
-                if (searchTerm && !user.nome.toLowerCase().startsWith(searchTerm)) {
-                    return; // ignora se não começar com o termo
+                if (searchTerm && !user.nome?.toLowerCase().startsWith(searchTerm)) {
+                    return;
                 }
 
+                users.push({ ...user, uid });
+            });
+
+            // 🔤 ORDENAÇÃO ALFABÉTICA PELO NOME
+            users.sort((a, b) => {
+                return (a.nome || "").localeCompare(b.nome || "");
+            });
+
+            // Renderiza os usuários
+            users.forEach(user => {
                 const userCard = document.createElement("div");
                 userCard.className = "user-card";
 
@@ -209,21 +222,21 @@ function loadUsers() {
                     actionBtn = document.createElement("button");
                     actionBtn.textContent = "Promover a Admin";
                     actionBtn.className = "primary";
-                    actionBtn.onclick = () => promoteToAdmin(uid);
+                    actionBtn.onclick = () => promoteToAdmin(user.uid);
                 } else {
                     actionBtn = document.createElement("button");
                     actionBtn.textContent = "Remover Admin";
                     actionBtn.className = "danger";
-                    actionBtn.onclick = () => demoteFromAdmin(uid);
+                    actionBtn.onclick = () => demoteFromAdmin(user.uid);
                 }
-                row.appendChild(actionBtn);
 
+                row.appendChild(actionBtn);
                 userCard.appendChild(row);
                 userList.appendChild(userCard);
             });
 
             // Caso não encontre nenhum usuário
-            if (userList.innerHTML === "") {
+            if (users.length === 0) {
                 userList.innerHTML = "<p>Nenhum usuário encontrado.</p>";
             }
         })
