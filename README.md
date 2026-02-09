@@ -69,8 +69,22 @@ Substituindo o antigo compartilhamento por WhatsApp, esta aba permite que admini
 * **Controle de Presença:** Listagem de inscritos para confirmação de presença e cálculo do **Fator K**.
 * **Inscrições:** Sistema de abertura automática em horários determinados e opção de cancelamento pelo usuário.
 
-<img src="hosting/public/images/github/readme/planilha.png" width="48%"/><br><br>
-<img src="hosting/public/images/github/readme/listaAdmin" width="48%"/> <img src="hosting/public/images/github/readme/infoUser.png" width="48%"/>
+<div align="center">
+  <img src="hosting/public/images/github/readme/planilha.png" width="80%" alt="Planilha de Inscrições"/>
+  
+  <br><br>
+
+  <table border="0">
+    <tr>
+      <td align="center" valign="bottom">
+        <img src="hosting/public/images/github/readme/listaAdmin.png" width="80%" alt="Lista Admin"/>
+      </td>
+      <td align="center" valign="bottom">
+        <img src="hosting/public/images/github/readme/infoUser.png" width="100%" alt="Informações Usuário"/>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
