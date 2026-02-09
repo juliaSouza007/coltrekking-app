@@ -3,7 +3,7 @@
   # **COLTREKKING WEB APP** <img src="hosting/public/images/logo.png" alt="Logo do Projeto" width="28px"/>
 
   <img src="hosting/public/images/coltrekkingHorizontal.png" alt="Logo do Projeto" width="45%"/>
-  <img src="hosting/public/images/groupHH.jpg" alt="Grupo 17/05" width="40%"/>
+  <img src="hosting/public/images/github/groupHH.jpg" alt="Grupo 17/05" width="40%"/>
 </div>
 
 ---
@@ -19,6 +19,8 @@ O Coltrekking é um projeto de ensino que visa compreender melhor a realidade co
 ### PRINCIPAIS FUNCIONALIDADES
 
 O site funciona como um **gestor de eventos**, permitindo que administradores publiquem trilhas com diversas especificações: distância, rota, tipo de trajeto, nível de dificuldade, data, entre outros. Os usuários — alunos, professores e servidores do COLTEC — podem se inscrever para participar das trilhas com a conta institucional (@teiacoltec).
+
+<img src="hosting/public/images/github/readme/loginUser.png" alt="Login" width="45%"/>
 
 Também foram implementadas as seguintes abas:
 
@@ -42,7 +44,9 @@ Oi! Meu nome é **Júlia Souza**. Atualmente curso o ensino técnico integrado e
 Conheci o projeto Coltrekking assim que entrei no colégio e me interessei. Participei de algumas trilhas entre 2023 e 2024 e, neste ano, passei a ir a todas que consigo! Me apaixonei pelas trilhas e, em 2025, fui aprovada no processo seletivo do **Programa de Monitoria do COLTEC** para desenvolver este site como estágio de conclusão de curso e complementador do Projeto de Ensino.
 
 <div align="center">
-<img src="hosting/public/images/dev.png" alt="Julinha no Trekking" width="40%"/>
+<img src="hosting/public/images/github/dev.png" alt="Julinha no Trekking" width="40%"/>
+<img src="hosting/public/images/github/devMadames.jpg" alt="Julinha no Trekking" width="40%"/>
+<img src="hosting/public/images/github/HondinhaJulinha.jpg" alt="Hondinha e Julinha no Trekking" width="40%"/>
 </div>
 
 <div align="center">
