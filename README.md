@@ -43,11 +43,17 @@ Oi! Meu nome é **Júlia Souza**. Atualmente curso o ensino técnico integrado e
 
 Conheci o projeto Coltrekking assim que entrei no colégio e me interessei. Participei de algumas trilhas entre 2023 e 2024 e, neste ano, passei a ir a todas que consigo! Me apaixonei pelas trilhas e, em 2025, fui aprovada no processo seletivo do **Programa de Monitoria do COLTEC** para desenvolver este site como estágio de conclusão de curso e complementador do Projeto de Ensino.
 
-<div align="center">
-<img src="hosting/public/images/github/dev.png" alt="Julinha no Trekking" width="40%"/>
-<img src="hosting/public/images/github/devMadames.jpg" alt="Julinha no Trekking" width="40%"/>
-<img src="hosting/public/images/github/HondinhaJulinha.jpg" alt="Hondinha e Julinha no Trekking" width="40%"/>
-</div>
+<table align="center">
+  <tr>
+    <td>
+      <img src="hosting/public/images/github/dev.jpg" width="400"><br>
+      <img src="hosting/public/images/github/devMadames.jpg" width="400">
+    </td>
+    <td>
+      <img src="hosting/public/images/github/HondinhaJulinha.jpg" width="450">
+    </td>
+  </tr>
+</table>
 
 <div align="center">
 
