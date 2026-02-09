@@ -20,28 +20,73 @@ O Coltrekking é um projeto de ensino que visa compreender melhor a realidade co
 
 O site funciona como um **gestor de eventos**, permitindo que administradores publiquem trilhas com diversas especificações: distância, rota, tipo de trajeto, nível de dificuldade, data, entre outros. Os usuários — alunos, professores e servidores do COLTEC — podem se inscrever para participar das trilhas com a conta institucional (@teiacoltec).
 
+### Autenticação com Google
+Permite ao usuário fazer login diretamente com o Google, com restrição obrigatória ao e-mail institucional **@teiacoltec**.
+
 <img src="hosting/public/images/github/readme/loginUser.png" alt="Login" width="45%"/>
 
-Também foram implementadas as seguintes abas:
+### Gestão e Edição de Eventos
+Permite que os administradores criem ou editem eventos. O sistema valida regras de datas e exige o preenchimento de todos os campos para garantir a organização.
 
-- **Eventos**: página principal para visualização e inscrição nas trilhas.
-- **Photos**: substituindo o antigo compartilhamento por WhatsApp, com acesso a um drive organizado;
-- **Lista Negra**: exibição de pessoas suspensas das trilhas por faltas não justificadas ou condutas inadequadas;
-- **Instruções Gerais**: com orientações sobre o que levar, o que evitar, precauções e recomendações importantes;
+<table>
+  <tr>
+    <td width="50%">
+      <img src="hosting/public/images/github/readme/eventosUser.png" width="100%" alt="Eventos Usuário"><br><br>
+      <img src="hosting/public/images/github/readme/criarEventosAdmin.png" width="100%" alt="Criar Eventos">
+    </td>
+    <td width="50%" valign="center">
+      <img src="hosting/public/images/github/readme/eventosAdmin.png" width="100%" alt="Eventos Admin"><br><br>
+      <img src="hosting/public/images/github/readme/editarEventosAdmin.png" alt="Editar Eventos" width="100%"/>
+    </td>
+  </tr>
+</table>
+
+### Aba Photos
+Substituindo o antigo compartilhamento por WhatsApp, esta aba permite que administradores publiquem links de drives, mantendo as fotos organizadas e acessíveis.
+
+<img src="hosting/public/images/github/readme/photosAdmin.png" width="48%"/> <img src="hosting/public/images/github/readme/photosUser.png" width="48%"/>
+
+### Gerenciador de Usuários e Segurança
+* **Promoção de Admins:** Facilita a transição de membros da comissão, permitindo promover novos administradores.
+* **Lista de Bloqueios:** Exibição de pessoas suspensas por faltas não justificadas ou condutas inadequadas.
+* **Instruções Gerais:** Orientações sobre o que levar, precauções e recomendações.
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="hosting/public/images/github/readme/promoteAdmin.png" width="100%" alt="Promover Admin"><br><br>
+      <img src="hosting/public/images/github/readme/instrucoesUser.png" width="100%" alt="Instruções Gerais">
+    </td>
+    <td width="50%" valign="center">
+      <img src="hosting/public/images/github/readme/blocksAdmin.png" width="100%" alt="Lista de Bloqueio Admin"><br><br>
+      <img src="hosting/public/images/github/readme/blocksUser.png" width="100%"/>
+    </td>
+  </tr>
+</table>
+
+### Administrativo e Inscrições
+* **Dados e Planilhas:** Coleta de informações pessoais (com validação de CPF) e exportação de listas em **.csv**.
+* **Controle de Presença:** Listagem de inscritos para confirmação de presença e cálculo do **Fator K**.
+* **Inscrições:** Sistema de abertura automática em horários determinados e opção de cancelamento pelo usuário.
+
+<img src="hosting/public/images/github/readme/planilha.png" width="48%"/><br><br>
+<img src="hosting/public/images/github/readme/listaAdmin" width="48%"/> <img src="hosting/public/images/github/readme/infoUser.png" width="48%"/>
 
 ---
 
 ### COMO FOI REALIZADO
 
-O site foi desenvolvido do zero, utilizando as novas tecnologias do Google, como **Firebase Authentication**, **Cloud Functions**, **Realtime Database**, **Hosting**, entre outras, conforme a necessidade do projeto. Além disso, as linguagens utilizadas foram HTML, JavaScript, CSS e um pouco de JSON.
+O site foi desenvolvido do zero, utilizando as tecnologias do Google, como **Firebase Authentication**, **Cloud Functions**, **Realtime Database** e **Hosting**. As linguagens utilizadas foram HTML, JavaScript, CSS e JSON.
 
 ---
 
-#### Sobre a desenvolvedora
+### Sobre a desenvolvedora
 
-Oi! Meu nome é **Júlia Souza**. Atualmente curso o ensino técnico integrado em Desenvolvimento de Sistemas no **Colégio Técnico da UFMG (COLTEC)**.
+Oi! Meu nome é Júlia, mais conhecida como Julinha.
 
-Conheci o projeto Coltrekking assim que entrei no colégio e me interessei. Participei de algumas trilhas entre 2023 e 2024 e, neste ano, passei a ir a todas que consigo! Me apaixonei pelas trilhas e, em 2025, fui aprovada no processo seletivo do **Programa de Monitoria do COLTEC** para desenvolver este site como estágio de conclusão de curso e complementador do Projeto de Ensino.
+Sou formada no curso técnico integrado em Desenvolvimento de Sistemas pelo Colégio Técnico da UFMG (COLTEC), e este projeto nasceu do meu estágio de conclusão de curso.
+
+Minha história com o Coltrekking começou logo no primeiro ano de colégio. O que começou como uma curiosidade em 2023 se tornou uma paixão: no meu último ano, eu já não perdia uma trilha sequer! Essa conexão com o projeto me motivou a ser aprovada no Programa de Monitoria do COLTEC, onde tive a oportunidade de unir a tecnologia e a natureza. Desenvolver este sistema foi a forma que encontrei de retribuir ao projeto, transformando meu estágio em uma solução real para facilitar a organização das trilhas que tanto amo.
 
 <table align="center">
   <tr>
@@ -49,7 +94,7 @@ Conheci o projeto Coltrekking assim que entrei no colégio e me interessei. Part
       <img src="hosting/public/images/github/dev.jpg" width="400"><br>
       <img src="hosting/public/images/github/devMadames.jpg" width="400">
     </td>
-    <td>
+    <td valign="center">
       <img src="hosting/public/images/github/HondinhaJulinha.jpg" width="450">
     </td>
   </tr>
